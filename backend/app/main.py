@@ -12,6 +12,7 @@ from . import config
 from .analysis import alerts
 from .grid import contingency, state, topology
 from .llm import orchestrator
+from .llm.provider import LLMProviderError
 from .schemas import (
     ChatRequest,
     ChatResponse,
@@ -77,22 +78,33 @@ def get_alerts(datetime: str = "2024_01_01_18_00_00", horizon_h: int = 2) -> dic
 
 @app.post("/chat", response_model=ChatResponse)
 def post_chat(req: ChatRequest) -> ChatResponse:
-    return orchestrator.run_chat(req.message, datetime=req.datetime, history=req.history)
+    try:
+        return orchestrator.run_chat(req.message, datetime=req.datetime, history=req.history)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.post("/apply")
 def post_apply(action: ProposedAction) -> dict:
-    return orchestrator.apply_action(action)
+    try:
+        return orchestrator.apply_action(action)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.get("/assess", response_model=RiskVerdict)
 def get_assess(element: str, datetime: str = "2024_01_01_18_00_00") -> RiskVerdict:
     try:
         return orchestrator.assess_risk(datetime, element)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/summary", response_model=ShiftSummary)
 def get_summary(datetime: str = "2024_01_01_18_00_00", window_h: int = 12) -> ShiftSummary:
-    return orchestrator.shift_summary(datetime, window_h=window_h)
+    try:
+        return orchestrator.shift_summary(datetime, window_h=window_h)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc

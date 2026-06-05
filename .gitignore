@@ -18,6 +18,7 @@ venv/
 
 # Node / Next.js
 node_modules/
+frontend/.npm-cache/
 frontend/.next/
 frontend/out/
 *.log

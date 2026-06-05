@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import unicodedata
 
 from dotenv import load_dotenv
 
@@ -14,8 +15,33 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 
 load_dotenv(BACKEND_ROOT / ".env")
 
+def _normalized_name(path: Path) -> str:
+    return unicodedata.normalize("NFC", path.name)
+
+
+def _resolve_dataset_root() -> Path:
+    """Support both nested and single-folder dataset layouts and Unicode filename variants."""
+    exact_nested = REPO_ROOT / "greenhack-2026-ČEPS-dataset" / "greenhack-2026-ČEPS-dataset"
+    if exact_nested.exists():
+        return exact_nested
+
+    exact_single = REPO_ROOT / "greenhack-2026-ČEPS-dataset"
+    if exact_single.exists():
+        return exact_single
+
+    for child in REPO_ROOT.iterdir():
+        if not child.is_dir():
+            continue
+        if _normalized_name(child) != "greenhack-2026-ČEPS-dataset":
+            continue
+        nested = child / "greenhack-2026-ČEPS-dataset"
+        return nested if nested.exists() else child
+
+    return exact_nested
+
+
 # --- Dataset layout (the folder is gitignored) ---
-DATASET_ROOT = REPO_ROOT / "greenhack-2026-ČEPS-dataset" / "greenhack-2026-ČEPS-dataset"
+DATASET_ROOT = _resolve_dataset_root()
 DATA_ROOT = DATASET_ROOT / "data"
 SNAPSHOTS_DIR = DATA_ROOT / "snapshots"
 STATIC_DIR = DATA_ROOT / "static"
@@ -40,7 +66,7 @@ V_PU_MAX = float(os.getenv("V_PU_MAX", "1.05"))
 
 # --- LLM ---
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
-LLM_MODEL = os.getenv("LLM_MODEL", "gemini-3-flash")
+LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.5-flash")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 LLM_MAX_TOOL_ITERATIONS = int(os.getenv("LLM_MAX_TOOL_ITERATIONS", "6"))
 

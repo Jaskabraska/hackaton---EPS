@@ -31,6 +31,10 @@ class Provider(Protocol):
     def chat(self, messages: list[dict[str, Any]], tools: list[dict] | None = None) -> LLMResponse: ...
 
 
+class LLMProviderError(RuntimeError):
+    """Raised when the configured LLM provider rejects or cannot complete a request."""
+
+
 class RealProvider:
     """Wraps the OpenAI-compatible chat completions API."""
 
@@ -41,21 +45,46 @@ class RealProvider:
         self._client = OpenAI(base_url=config.LLM_BASE_URL, api_key=config.LLM_API_KEY)
         self._model = config.LLM_MODEL
 
+    @staticmethod
+    def _arguments(raw: str | None) -> dict[str, Any]:
+        try:
+            return json.loads(raw or "{}")
+        except json.JSONDecodeError:
+            return {}
+
     def chat(self, messages: list[dict[str, Any]], tools: list[dict] | None = None) -> LLMResponse:
         kwargs: dict[str, Any] = {"model": self._model, "messages": messages}
         if tools:
             kwargs["tools"] = tools
             kwargs["tool_choice"] = "auto"
-        completion = self._client.chat.completions.create(**kwargs)
+        try:
+            completion = self._client.chat.completions.create(**kwargs)
+        except Exception as exc:
+            raise LLMProviderError(f"LLM request failed for model '{self._model}': {exc}") from exc
         message = completion.choices[0].message
-        tool_calls = [
-            ToolCall(id=tc.id, name=tc.function.name, arguments=json.loads(tc.function.arguments or "{}"))
-            for tc in (message.tool_calls or [])
-        ]
+        tool_calls: list[ToolCall] = []
+        raw_message: dict[str, Any] = {"role": "assistant"}
+        if message.content is not None:
+            raw_message["content"] = message.content
+        if message.tool_calls:
+            raw_message["tool_calls"] = []
+            for index, tc in enumerate(message.tool_calls):
+                call_id = tc.id or f"call_{index}"
+                tool_calls.append(ToolCall(id=call_id, name=tc.function.name, arguments=self._arguments(tc.function.arguments)))
+                raw_message["tool_calls"].append(
+                    {
+                        "id": call_id,
+                        "type": "function",
+                        "function": {
+                            "name": tc.function.name,
+                            "arguments": tc.function.arguments or "{}",
+                        },
+                    }
+                )
         return LLMResponse(
             content=message.content,
             tool_calls=tool_calls,
-            raw_assistant_message=message.model_dump(),
+            raw_assistant_message=raw_message,
         )
 
 
