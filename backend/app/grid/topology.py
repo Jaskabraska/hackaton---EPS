@@ -11,7 +11,7 @@ from functools import lru_cache
 import pandas as pd
 
 from .. import config
-from . import loader
+from . import loader, state
 
 
 @lru_cache(maxsize=1)
@@ -45,7 +45,7 @@ def build_map(value: str, write: bool = False) -> dict:
                 "x": x,
                 "y": y,
                 "vm_pu": round(vm, 4),
-                "in_band": config.V_PU_MIN <= vm <= config.V_PU_MAX,
+                "in_band": state.bus_in_band(net, i),
                 "p_load_mw": round(load_by_bus.get(i, 0.0), 2),
                 "p_gen_mw": round(gen_by_bus.get(i, 0.0), 2),
             }
@@ -80,3 +80,46 @@ def build_map(value: str, write: bool = False) -> dict:
             json.dumps(payload, indent=2), encoding="utf-8"
         )
     return payload
+
+
+def connections(value: str, bus: str) -> dict:
+    """Neighbouring buses of `bus` and the branches linking them (lines + transformers)."""
+    net = loader.load_snapshot(value)
+
+    def name(idx: int) -> str:
+        return str(net.bus.at[int(idx), "name"])
+
+    neighbours: list[dict] = []
+    for i in net.line.index:
+        a, b = name(net.line.at[i, "from_bus"]), name(net.line.at[i, "to_bus"])
+        if bus in (a, b):
+            neighbours.append(
+                {
+                    "bus_name": b if a == bus else a,
+                    "branch_name": str(net.line.at[i, "name"]),
+                    "kind": "line",
+                    "loading_percent": round(float(net.res_line.at[i, "loading_percent"]), 2)
+                    if net.res_line.at[i, "loading_percent"] == net.res_line.at[i, "loading_percent"]
+                    else 0.0,
+                }
+            )
+    for i in net.trafo.index:
+        a, b = name(net.trafo.at[i, "hv_bus"]), name(net.trafo.at[i, "lv_bus"])
+        if bus in (a, b):
+            neighbours.append(
+                {
+                    "bus_name": b if a == bus else a,
+                    "branch_name": str(net.trafo.at[i, "name"]),
+                    "kind": "trafo",
+                    "loading_percent": round(float(net.res_trafo.at[i, "loading_percent"]), 2)
+                    if net.res_trafo.at[i, "loading_percent"] == net.res_trafo.at[i, "loading_percent"]
+                    else 0.0,
+                }
+            )
+
+    neighbours.sort(key=lambda n: n["bus_name"])
+    return {
+        "datetime": loader.normalise_datetime(value),
+        "bus": bus,
+        "connected_to": neighbours,
+    }

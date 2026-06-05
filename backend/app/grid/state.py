@@ -30,6 +30,31 @@ def _safe(value: float) -> float:
     return 0.0 if value is None or (isinstance(value, float) and math.isnan(value)) else float(value)
 
 
+def _limit(net, idx: int, column: str, fallback: float) -> float:
+    """Per-bus voltage limit from the snapshot, falling back to the global band."""
+    if column not in net.bus.columns:
+        return fallback
+    value = net.bus.at[idx, column]
+    return fallback if value is None or (isinstance(value, float) and math.isnan(value)) else float(value)
+
+
+def bus_limits(net, idx: int) -> tuple[float, float]:
+    """The operating voltage band for a single bus (its own limits, else the global band)."""
+    return (
+        _limit(net, idx, "min_vm_pu", config.V_PU_MIN),
+        _limit(net, idx, "max_vm_pu", config.V_PU_MAX),
+    )
+
+
+def bus_in_band(net, idx: int) -> bool:
+    lo, hi = bus_limits(net, idx)
+    return lo <= _safe(net.res_bus.at[idx, "vm_pu"]) <= hi
+
+
+def loading_threshold(kind: str) -> float:
+    return config.LINE_ALERT_PCT if kind == "line" else config.TRAFO_ALERT_PCT
+
+
 def _branch_loadings(net) -> list[BranchLoading]:
     lines = [
         BranchLoading(
@@ -83,15 +108,21 @@ def _region_balances(net) -> list[RegionBalance]:
 
 
 def _bus_voltages(net) -> list[BusVoltage]:
-    return [
-        BusVoltage(
-            bus_name=_bus_name(net, i),
-            region=_bus_region(net, i),
-            vm_pu=round(_safe(net.res_bus.at[i, "vm_pu"]), 4),
-            in_band=config.V_PU_MIN <= _safe(net.res_bus.at[i, "vm_pu"]) <= config.V_PU_MAX,
+    voltages = []
+    for i in net.bus.index:
+        lo, hi = bus_limits(net, i)
+        vm = _safe(net.res_bus.at[i, "vm_pu"])
+        voltages.append(
+            BusVoltage(
+                bus_name=_bus_name(net, i),
+                region=_bus_region(net, i),
+                vm_pu=round(vm, 4),
+                in_band=lo <= vm <= hi,
+                min_v_pu=round(lo, 4),
+                max_v_pu=round(hi, 4),
+            )
         )
-        for i in net.bus.index
-    ]
+    return voltages
 
 
 def compute_state(value: str, write: bool = False) -> GridState:
@@ -101,16 +132,17 @@ def compute_state(value: str, write: bool = False) -> GridState:
 
     binding = max(branches, key=lambda b: b.loading_percent, default=None)
     binding_constraint = (
-        BindingConstraint(element=binding.branch_name, kind=binding.kind, loading_percent=binding.loading_percent)
+        BindingConstraint(
+            element=binding.branch_name,
+            kind=binding.kind,
+            loading_percent=binding.loading_percent,
+            within_limits=binding.loading_percent < loading_threshold(binding.kind),
+        )
         if binding is not None
         else None
     )
 
-    overloaded = [
-        b
-        for b in branches
-        if b.loading_percent >= (config.LINE_ALERT_PCT if b.kind == "line" else config.TRAFO_ALERT_PCT)
-    ]
+    overloaded = [b for b in branches if b.loading_percent >= loading_threshold(b.kind)]
     overloaded.sort(key=lambda b: b.loading_percent, reverse=True)
 
     violations = [v for v in voltages if not v.in_band]

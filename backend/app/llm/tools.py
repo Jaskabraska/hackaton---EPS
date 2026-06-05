@@ -9,7 +9,7 @@ from typing import Any
 
 from ..analysis import alerts as alerts_mod
 from ..analysis import economics, forecasts
-from ..grid import contingency, state
+from ..grid import contingency, state, topology
 
 PROPOSE_ACTION = "propose_action"
 
@@ -48,6 +48,21 @@ TOOL_SCHEMAS: list[dict] = [
             "parameters": {
                 "type": "object",
                 "properties": {"datetime": {"type": "string"}, "horizon_h": {"type": "integer"}},
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_connections",
+            "description": "List the buses directly connected to a given bus and the branches linking them.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "bus": {"type": "string", "description": "Bus name, e.g. bus_003"},
+                    "datetime": {"type": "string"},
+                },
+                "required": ["bus"],
             },
         },
     },
@@ -116,6 +131,11 @@ def dispatch(name: str, args: dict[str, Any], default_datetime: str) -> dict:
         return state.compute_state(dt, write=True).model_dump()
     if name == "run_n1":
         return contingency.run_n1(dt, args["element"], write=True).model_dump()
+    if name == "get_connections":
+        bus = args.get("bus")
+        if not bus:
+            return {"error": "get_connections requires a 'bus' argument, e.g. bus_003"}
+        return topology.connections(dt, bus)
     if name == "get_alerts":
         return alerts_mod.generate_alerts(dt, horizon_h=int(args.get("horizon_h", 2)), write=True)
     if name == "get_forecast":

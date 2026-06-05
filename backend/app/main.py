@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import config
-from .analysis import alerts
+from .analysis import alerts, playback
 from .grid import contingency, state, topology
 from .llm import orchestrator
 from .llm.provider import LLMProviderError
@@ -108,6 +108,24 @@ def get_summary(datetime: str = "2024_01_01_18_00_00", window_h: int = 12) -> Sh
         return orchestrator.shift_summary(datetime, window_h=window_h)
     except LLMProviderError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/playback")
+def get_playback(hours: int = 24, start: str | None = None) -> dict:
+    if hours not in (24, 48):
+        raise HTTPException(status_code=400, detail="hours must be 24 or 48")
+    try:
+        if start:
+            datetimes = playback.enumerate_window(start, hours)
+            return {
+                "window_start": datetimes[0] if datetimes else start,
+                "window_end": datetimes[-1] if datetimes else start,
+                "hours": hours,
+                "datetimes": datetimes,
+            }
+        return playback.best_window(hours)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.get("/debug/llm")

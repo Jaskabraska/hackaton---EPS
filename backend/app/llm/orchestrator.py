@@ -16,6 +16,12 @@ from . import tools
 from .provider import Provider, get_provider
 
 DEFAULT_DATETIME = "2024_01_01_18_00_00"
+SUMMARY_SEED = 7
+
+# Cache the LLM-phrased summary text per (window_end, window_h) so repeated identical
+# requests are byte-identical even if the provider drifts. Keyed by the deterministic
+# inputs; the gathered events/counts are already deterministic.
+_summary_text_cache: dict[tuple[str, int], str] = {}
 
 HARD_RULES = (
     "You are Grid Pulse, an assistant for a transmission grid dispatcher (TSO ČEPS).\n"
@@ -40,10 +46,54 @@ def _tool_message(call_id: str, result: dict) -> dict:
     return {"role": "tool", "tool_call_id": call_id, "content": json.dumps(result, default=str)}
 
 
+def _context_block(dt: str) -> str | None:
+    """Compact, tool-derived snapshot of the current grid + active alerts for grounding.
+
+    Returns None if the dataset for this datetime is unavailable (keeps chat working
+    in mock/key-less runs without the dataset).
+    """
+    from ..analysis import alerts as alerts_mod
+    from ..grid import state as state_mod
+
+    try:
+        gs = state_mod.compute_state(dt)
+        payload = alerts_mod.generate_alerts(dt)
+    except FileNotFoundError:
+        return None
+
+    context = {
+        "datetime": gs.datetime,
+        "total_load_mw": gs.total_load_mw,
+        "total_gen_mw": gs.total_gen_mw,
+        "binding_constraint": gs.binding_constraint.model_dump() if gs.binding_constraint else None,
+        "voltage_violation_count": len(gs.voltage_violations),
+        "regions": [r.model_dump() for r in gs.regions],
+        "active_alerts": [
+            {"id": a["id"], "severity": a["severity"], "element": a["element"], "title": a["title"]}
+            for a in payload["alerts"]
+        ],
+    }
+    return json.dumps(context, default=str)
+
+
 def run_chat(message: str, datetime: str | None = None, history: list[dict] | None = None) -> ChatResponse:
     dt = datetime or DEFAULT_DATETIME
     provider = get_provider()
     messages: list[dict] = [{"role": "system", "content": build_system_prompt()}]
+
+    context = _context_block(dt)
+    if context is not None:
+        messages.append(
+            {
+                "role": "system",
+                "content": (
+                    f"CURRENT GRID CONTEXT (tool-derived, datetime={dt}). These figures come "
+                    "from our solved snapshot and alert engine; use them to ground your answer, "
+                    f"and call a tool for anything not present here:\n{context}"
+                ),
+            }
+        )
+
     messages += history or []
     messages.append({"role": "user", "content": message})
 
@@ -88,7 +138,13 @@ def apply_action(action: ProposedAction) -> dict:
 
 
 def _summarise(provider: Provider, system: str, user: str) -> str:
-    resp = provider.chat([{"role": "system", "content": system}, {"role": "user", "content": user}], tools=None)
+    """Deterministic LLM phrasing: temperature 0 + fixed seed."""
+    resp = provider.chat(
+        [{"role": "system", "content": system}, {"role": "user", "content": user}],
+        tools=None,
+        temperature=0,
+        seed=SUMMARY_SEED,
+    )
     return resp.content or ""
 
 
@@ -155,13 +211,18 @@ def shift_summary(datetime: str | None = None, window_h: int = 12, write: bool =
         )
 
     total_alerts = sum(e["alert_count"] for e in events)
-    provider = get_provider()
-    summary = _summarise(
-        provider,
-        "You write a 12-hour shift handover for a grid dispatcher. British spelling, concise, "
-        "highlight the binding constraints and any forecast risk. Use only the figures provided.",
-        json.dumps({"window_h": window_h, "events": events}, default=str),
-    )
+    cache_key = (end, window_h)
+    if cache_key in _summary_text_cache:
+        summary = _summary_text_cache[cache_key]
+    else:
+        provider = get_provider()
+        summary = _summarise(
+            provider,
+            "You write a 12-hour shift handover for a grid dispatcher. British spelling, concise, "
+            "highlight the binding constraints and any forecast risk. Use only the figures provided.",
+            json.dumps({"window_h": window_h, "events": events}, default=str),
+        )
+        _summary_text_cache[cache_key] = summary
 
     result = ShiftSummary(
         window_start=events[-1]["datetime"] if events else end,
