@@ -1,0 +1,127 @@
+{
+  "generated_at": "2026-01-15T18:02:11",
+  "source": "Grid Pulse — automatická analýza JSON síťového stavu",
+  "alerts": [
+    {
+      "id": "ALR-001",
+      "severity": "HIGH",
+      "element": "R-CENTRUM / T2",
+      "category": "transformer",
+      "title": "Transformátor T2 v Rozvodně Centrum se blíží limitu (91 %)",
+      "what": "Transformátor T2 (63 MVA) je zatížen na 91 % a zatížení stoupá s večerní špičkou. T1 je v plánované údržbě, takže Centrum napájí jediný stroj.",
+      "why": "Pravidlo: zatížení transformátoru > 90 % po dobu > 10 min při nedostupné záloze (N-1 porušeno). Signál: měřený proud T2 vs. jmenovitý proud + stav T1 = OUT.",
+      "action": "Snížit transit přes R-CENTRUM: navýšit výrobu Teplárny Přístav z 80 → 95 MW a přesměrovat tok jižním koridorem L09 (Přístav↔Centrum, dnes jen 28 %). Aktivovat 20 MW vybíjení BESS přímo v Centru.",
+      "alternative": "Místo dovozu přes přetížený sever (L02) krýt spotřebu Centra lokálně z jihu (CHP + baterie). Dnešní stav vozí výkon zbytečně přes T2; alternativa T2 odlehčí o ~25 MW.",
+      "impact_risk": "Bez zásahu: při dalším výpadku (N-1) T2 přetížení až 168 % → automatika odlehčí ~40 MW, riziko výpadku Datacentra a části Centra. Riziko poškození/zkrácení životnosti transformátoru.",
+      "financial": {
+        "intervention_cost_czk": 48000,
+        "avoided_penalty_czk": 2800000,
+        "net_saving_czk": 2752000,
+        "note": "Náklad = vícevýroba CHP 15 MW × 2 h × ~1 600 Kč/MWh. Vyhnutá penalizace = odhad za nedodávku kritickému odběru + riziko HW."
+      },
+      "predictive_basis": null
+    },
+    {
+      "id": "ALR-002",
+      "severity": "CRITICAL",
+      "element": "Koridor L02 (Sever↔Centrum)",
+      "category": "line_forecast",
+      "title": "Predikce: import koridor L02 překročí 100 % do ~2 h",
+      "what": "Příchod studené fronty zvýší spotřebu o ~8 % a současně klesne vítr → menší lokální výroba VTE Sever. Tok na L02 (dnes 82 %) by za ~2 h dosáhl ~103 %.",
+      "why": "Korelace externích signálů: weather forecast (teplota −6 °C → +8 % load) + wind forecast (pokles z 22 → 9 MW). Pravidlo: predikovaná zatíženost koridoru > 100 % v horizontu < 3 h.",
+      "action": "Předzásobit: nabít/podržet BESS na ≥ 80 % do 19:30, předjednat redispečink CHP +10 MW a přerušitelný kontrakt s Průmyslovou zónou (−10 MW na 2 h, demand response).",
+      "alternative": "Reaktivní řešení (čekat na překročení) by vynutilo nouzové odlehčení. Proaktivní příprava záloh udrží N-1 a stojí zlomek.",
+      "impact_risk": "Bez zásahu: přetížení L02, kaskádové přetížení T2, hrozí řízené odpojení částí Severu i Centra. Odhad nedodané energie 30–50 MWh.",
+      "financial": {
+        "intervention_cost_czk": 36000,
+        "avoided_penalty_czk": 1900000,
+        "net_saving_czk": 1864000,
+        "note": "DR platba Průmyslu 10 MW × 2 h × 900 Kč/MWh + redispečink. Vyhnutá nedodávka a penalizace."
+      },
+      "predictive_basis": {
+        "weather": "Studená fronta, −6 °C, +8 % spotřeba",
+        "wind": "Pokles větru 22→9 MW",
+        "horizon_h": 2
+      }
+    },
+    {
+      "id": "ALR-003",
+      "severity": "MEDIUM",
+      "element": "FVE Přístav-Jih / L11",
+      "category": "overvoltage_forecast",
+      "title": "Predikce: zítřejší polední přebytek FV → riziko přepětí v Přístavu",
+      "what": "Satelitní data hlásí protrhání oblačnosti zítra 11–14 h. FVE Jih najede z 0 na ~40 MW, večerní spotřeba chybí → reverzní tok do R-Přístav a napětí roste k hornímu limitu.",
+      "why": "Signál: satellite/cloud-cover forecast (pokrytí < 15 %) + nízká polední spotřeba. Pravidlo: predikovaná výroba FV > lokální spotřeba → reverzní tok a U > 1,05 p.u.",
+      "action": "Naplánovat na poledne: nabíjení BESS (uložit přebytek), případně mírný curtailment FVE 5–8 MW, regulace jalového výkonu na R-Přístav.",
+      "alternative": "Místo zmaření přebytku (curtailment = ztráta tržby) přebytek uložit do baterie a využít na večerní špičku — dvojí úspora.",
+      "impact_risk": "Bez zásahu: přepětí, riziko odpojení FV ochranami a kolísání napětí pro Průmysl. Ztráta zelené energie.",
+      "financial": {
+        "intervention_cost_czk": 0,
+        "avoided_penalty_czk": 120000,
+        "net_saving_czk": 120000,
+        "note": "Uložení 25 MWh do BESS místo curtailmentu; hodnota uložené energie + vyhnuté přepětí."
+      },
+      "predictive_basis": {
+        "satellite": "Cloud cover < 15 % zítra 11–14 h",
+        "horizon_h": 18
+      }
+    },
+    {
+      "id": "ALR-004",
+      "severity": "LOW",
+      "element": "BESS Centrum",
+      "category": "reserve",
+      "title": "Nízká rezerva BESS (SoC 35 %)",
+      "what": "Bateriové úložiště je na 35 % nabití — omezená rezerva pro krytí večerní špičky a pro scénář ALR-002.",
+      "why": "Pravidlo: SoC < 40 % v okně před predikovanou špičkou. Signál: telemetrie BESS.",
+      "action": "Dobít BESS z levné noční/odpolední energie před 19:00, prioritně před aktivací dle ALR-002.",
+      "alternative": "Ponechat nízký SoC by snížilo schopnost reagovat na přetížení; dobití je levné a zvyšuje flexibilitu.",
+      "impact_risk": "Bez zásahu: méně manévrovacího prostoru při špičce, nutnost dražšího redispečinku.",
+      "financial": {
+        "intervention_cost_czk": 9000,
+        "avoided_penalty_czk": 80000,
+        "net_saving_czk": 71000,
+        "note": "Dobití ~14 MWh za levnější cenu vs. dražší zásah později."
+      },
+      "predictive_basis": null
+    }
+  ],
+  "recommendation_engine": {
+    "headline": "Odlehčit T2 v Centru lokální výrobou z jihu a připravit zálohy na studenou frontu",
+    "actions_ranked": [
+      {
+        "action": "Redispečink: CHP Přístav 80 → 95 MW",
+        "effect": "T2 −25 MW, L02 −12 %",
+        "cost_czk": 48000,
+        "type": "redispatch"
+      },
+      {
+        "action": "BESS Centrum: vybíjet 20 MW ve špičce",
+        "effect": "T2 −15 MW",
+        "cost_czk": 6000,
+        "type": "storage"
+      },
+      {
+        "action": "Přesměrování toku na jižní koridor L09",
+        "effect": "využití volné kapacity (28→55 %)",
+        "cost_czk": 0,
+        "type": "reroute"
+      },
+      {
+        "action": "Demand response: Průmysl −10 MW na 2 h",
+        "effect": "L02 −8 %, rezerva pro frontu",
+        "cost_czk": 18000,
+        "type": "demand_response"
+      },
+      {
+        "action": "Dobít BESS před 19:00",
+        "effect": "rezerva pro ALR-002",
+        "cost_czk": 9000,
+        "type": "reserve"
+      }
+    ],
+    "total_intervention_czk": 81000,
+    "total_avoided_czk": 4900000,
+    "net_saving_czk_day": 4819000
+  }
+}
