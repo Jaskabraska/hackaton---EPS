@@ -13,6 +13,10 @@ export default function ChatBox({ datetime }: { datetime: string }) {
   const [pending, setPending] = useState<ProposedAction | null>(null)
   const [busy, setBusy] = useState(false)
 
+  function describeError(error: unknown) {
+    return error instanceof Error ? error.message : "Assistant request failed."
+  }
+
   async function ask() {
     const message = input.trim()
     if (!message || busy) return
@@ -23,6 +27,9 @@ export default function ChatBox({ datetime }: { datetime: string }) {
       const res: ChatResponse = await sendChat(message, datetime)
       setEntries((e) => [...e, { role: "assistant", text: res.reply }])
       setPending(res.status === "awaiting_approval" ? res.proposed_action : null)
+    } catch (error) {
+      setEntries((e) => [...e, { role: "assistant", text: describeError(error) }])
+      setPending(null)
     } finally {
       setBusy(false)
     }
@@ -35,6 +42,8 @@ export default function ChatBox({ datetime }: { datetime: string }) {
       await applyAction(pending)
       setEntries((e) => [...e, { role: "assistant", text: `Applied: ${pending.description}. Deeper analysis written to output/.` }])
       setPending(null)
+    } catch (error) {
+      setEntries((e) => [...e, { role: "assistant", text: describeError(error) }])
     } finally {
       setBusy(false)
     }

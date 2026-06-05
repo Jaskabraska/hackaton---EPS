@@ -12,6 +12,7 @@ from . import config
 from .analysis import alerts
 from .grid import contingency, state, topology
 from .llm import orchestrator
+from .llm.provider import LLMProviderError
 from .schemas import (
     ChatRequest,
     ChatResponse,
@@ -77,22 +78,100 @@ def get_alerts(datetime: str = "2024_01_01_18_00_00", horizon_h: int = 2) -> dic
 
 @app.post("/chat", response_model=ChatResponse)
 def post_chat(req: ChatRequest) -> ChatResponse:
-    return orchestrator.run_chat(req.message, datetime=req.datetime, history=req.history)
+    try:
+        return orchestrator.run_chat(req.message, datetime=req.datetime, history=req.history)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.post("/apply")
 def post_apply(action: ProposedAction) -> dict:
-    return orchestrator.apply_action(action)
+    try:
+        return orchestrator.apply_action(action)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.get("/assess", response_model=RiskVerdict)
 def get_assess(element: str, datetime: str = "2024_01_01_18_00_00") -> RiskVerdict:
     try:
         return orchestrator.assess_risk(datetime, element)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/summary", response_model=ShiftSummary)
 def get_summary(datetime: str = "2024_01_01_18_00_00", window_h: int = 12) -> ShiftSummary:
-    return orchestrator.shift_summary(datetime, window_h=window_h)
+    try:
+        return orchestrator.shift_summary(datetime, window_h=window_h)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/debug/llm")
+def debug_llm() -> dict:
+    """Diagnose the LLM provider: plain text call, then a minimal tool-calling call."""
+    import traceback
+    from .llm.provider import RealProvider, MockProvider
+    from . import config as cfg
+
+    result: dict = {
+        "mock_mode": cfg.use_mock_llm(),
+        "model": cfg.LLM_MODEL,
+        "base_url": cfg.LLM_BASE_URL,
+        "api_key_set": bool(cfg.LLM_API_KEY),
+        "api_key_prefix": cfg.LLM_API_KEY[:8] + "..." if cfg.LLM_API_KEY else None,
+        "plain_text": None,
+        "tool_call": None,
+        "errors": [],
+    }
+
+    if cfg.use_mock_llm():
+        result["plain_text"] = "skipped (mock mode)"
+        result["tool_call"] = "skipped (mock mode)"
+        return result
+
+    try:
+        provider = RealProvider()
+    except Exception as exc:
+        result["errors"].append(f"provider init: {exc}")
+        return result
+
+    # 1. Plain text — same path as shift summary
+    try:
+        resp = provider.chat(
+            [{"role": "user", "content": "Reply with exactly: PLAIN_OK"}],
+            tools=None,
+        )
+        result["plain_text"] = resp.content
+    except Exception as exc:
+        result["plain_text"] = f"ERROR: {exc}"
+        result["errors"].append(traceback.format_exc())
+
+    # 2. Minimal tool call — same path as /chat
+    minimal_tool = [
+        {
+            "type": "function",
+            "function": {
+                "name": "ping",
+                "description": "Return a ping confirmation.",
+                "parameters": {"type": "object", "properties": {}},
+            },
+        }
+    ]
+    try:
+        resp = provider.chat(
+            [{"role": "user", "content": "Call the ping tool now."}],
+            tools=minimal_tool,
+        )
+        result["tool_call"] = {
+            "content": resp.content,
+            "tool_calls": [{"name": tc.name, "arguments": tc.arguments} for tc in resp.tool_calls],
+        }
+    except Exception as exc:
+        result["tool_call"] = f"ERROR: {exc}"
+        result["errors"].append(traceback.format_exc())
+
+    return result
