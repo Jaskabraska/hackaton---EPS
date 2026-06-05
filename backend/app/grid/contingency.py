@@ -80,10 +80,16 @@ def run_n1(value: str, element: str, write: bool = False) -> ContingencyResult:
     table.at[idx, "in_service"] = False
 
     converged = True
+    isolated_bus_count = 0
     try:
         pp.runpp(net)
     except pp.LoadflowNotConverged:
         converged = False
+        try:
+            isolated = pp.topology.unsupplied_buses(net)
+            isolated_bus_count = len(isolated)
+        except Exception:
+            isolated_bus_count = 0
 
     overloads = _overloads(net) if converged else []
     worst = _worst_loading(net) if converged else 0.0
@@ -95,6 +101,7 @@ def run_n1(value: str, element: str, write: bool = False) -> ContingencyResult:
         n1_secure=converged and len(overloads) == 0,
         new_overloads=overloads,
         worst_loading_percent=worst,
+        isolated_bus_count=isolated_bus_count,
     )
 
     if write:

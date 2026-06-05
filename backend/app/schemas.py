@@ -57,6 +57,7 @@ class ContingencyResult(BaseModel):
     n1_secure: bool
     new_overloads: list[BranchLoading]
     worst_loading_percent: float
+    isolated_bus_count: int = 0
 
 
 class Alert(BaseModel):

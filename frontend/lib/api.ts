@@ -1,9 +1,12 @@
 import type {
   AlertsPayload,
   ChatResponse,
+  DayBundle,
   GridMapData,
   GridState,
+  PlaybookResult,
   ProposedAction,
+  RiskVerdict,
   ShiftSummary
 } from "./types"
 
@@ -45,3 +48,12 @@ export const sendChat = (message: string, datetime: string) =>
 
 export const applyAction = (action: ProposedAction) =>
   postJson<Record<string, unknown>>("/apply", action)
+
+export const fetchDayBundle = (date: string) =>
+  getJson<DayBundle>(`/day?date=${date}`)
+
+export const runPlaybook = (element: string, datetime: string) =>
+  postJson<PlaybookResult>(`/playbook?element=${encodeURIComponent(element)}&datetime=${encodeURIComponent(datetime)}`, {})
+
+export const fetchRiskVerdict = (element: string, datetime: string) =>
+  getJson<RiskVerdict>(`/assess?element=${encodeURIComponent(element)}&datetime=${encodeURIComponent(datetime)}`)

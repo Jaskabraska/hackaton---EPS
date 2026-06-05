@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import config
-from .analysis import alerts, playback
+from .analysis import alerts, day_bundle, playback, playbook as playbook_mod
 from .grid import contingency, state, topology
 from .llm import orchestrator
 from .llm.provider import LLMProviderError
@@ -126,6 +126,31 @@ def get_playback(hours: int = 24, start: str | None = None) -> dict:
         return playback.best_window(hours)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/day")
+def get_day(date: str = "2024_02_17") -> dict:
+    """Serve a precomputed day bundle from output/."""
+    import json
+    safe_date = date.replace("-", "_")
+    path = config.OUTPUT_DIR / f"day_bundle_{safe_date}.json"
+    if not path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Day bundle not found: {path.name}. Run: python -m app.analysis.day_bundle {date}",
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@app.post("/playbook")
+def post_playbook(element: str, datetime: str = "2024_02_17_19_00_00") -> dict:
+    """Run the pre-approved playbook for an alerted element."""
+    try:
+        return playbook_mod.run_playbook(datetime, element)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/debug/llm")
