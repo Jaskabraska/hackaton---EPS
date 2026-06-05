@@ -10,7 +10,7 @@ The core idea: **the LLM does not compute physics — it picks the right tool an
 |-------|------|---------|
 | Physics | **pandapower** | Solved load flow + N-1 contingency on the real IEEE-118 snapshots |
 | Data | **files, read on demand** | Dataset CSV/JSON + the snapshot JSONs; results cached in memory (no database) |
-| Brain | **Gemini via the OpenAI-compatible API** + tool calling | Dispatcher query → tool → explanation; mock provider when no key |
+| Brain | **Groq via the OpenAI-compatible API** + tool calling | Dispatcher query → tool → explanation; mock provider when no key |
 | UI | **Next.js + TypeScript + Tailwind** | Dispatcher dashboard: real-coordinate map, KPIs, alerts, chat |
 
 The backend is **FastAPI + Python**. The domain glossary (`backend/app/llm/glossary.json`) is injected into the LLM system prompt so it reads column names, units and TSO jargon correctly. Computed results are also written as JSON into `output/`.
@@ -60,20 +60,19 @@ copy .env.example .env        # NEXT_PUBLIC_API_URL=http://localhost:8000
 npm run dev
 ```
 
-## LLM provider (Gemini, free tier)
+## LLM provider (Groq, free tier)
 
 Configured purely through env vars in `backend/.env`:
 
 ```
-LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-LLM_MODEL=gemini-2.5-flash
-LLM_API_KEY=<shared key, never committed>
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=llama-3.3-70b-versatile
+LLM_API_KEY=<Groq key, never committed>
 ```
 
-- Default `gemini-2.5-flash` (stable, supports function calling). Other valid ids: `gemini-3-flash-preview`, `gemini-3.5-flash`, `gemini-flash-latest`. List your account's models at `GET {LLM_BASE_URL}models`.
-- For final demo runs only you may set `LLM_MODEL=gemini-2.5-pro` (strict **50 requests/day** free limit).
+- Default `llama-3.3-70b-versatile` on Groq (OpenAI-compatible, supports tool calling).
 - Drop-in fallbacks (same OpenAI-compatible interface, only env vars change):
-  - Groq: `LLM_BASE_URL=https://api.groq.com/openai/v1`, `LLM_MODEL=llama-3.3-70b-versatile`
+  - Gemini: `LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`, `LLM_MODEL=gemini-2.5-flash`
   - Ollama: `LLM_BASE_URL=http://localhost:11434/v1`, `LLM_MODEL=llama3.1`, `LLM_API_KEY=ollama`
 - No `LLM_API_KEY` → the deterministic **mock provider** is used so nothing breaks.
 

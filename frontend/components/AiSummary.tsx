@@ -8,11 +8,16 @@ import type { ShiftSummary } from "@/lib/types"
 export default function AiSummary({ datetime }: { datetime: string }) {
   const [summary, setSummary] = useState<ShiftSummary | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function run() {
     setLoading(true)
+    setError(null)
     try {
       setSummary(await fetchSummary(datetime))
+    } catch (err) {
+      setSummary(null)
+      setError(err instanceof Error ? err.message : "Summary generation failed.")
     } finally {
       setLoading(false)
     }
@@ -31,6 +36,8 @@ export default function AiSummary({ datetime }: { datetime: string }) {
       </div>
       {summary ? (
         <div className="text-sm text-slate-200 whitespace-pre-wrap">{summary.summary}</div>
+      ) : error ? (
+        <div className="text-xs text-rose-300">{error}</div>
       ) : (
         <div className="text-xs text-slate-400">
           Generates a deterministic 12-hour handover from the gathered alerts.
