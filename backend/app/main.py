@@ -9,8 +9,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import config
-from .grid import state
-from .schemas import GridState
+from .grid import contingency, state
+from .schemas import ContingencyResult, GridState
 
 app = FastAPI(title="Grid Pulse API", version="0.1.0")
 
@@ -37,3 +37,13 @@ def get_state(datetime: str = "2024_01_01_18_00_00") -> GridState:
         return state.compute_state(datetime, write=True)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/n1", response_model=ContingencyResult)
+def get_n1(element: str, datetime: str = "2024_01_01_18_00_00") -> ContingencyResult:
+    try:
+        return contingency.run_n1(datetime, element, write=True)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
