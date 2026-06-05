@@ -1,3 +1,23 @@
 # Dataset — large, not to be pushed to GitHub
 greenhack-2026-ČEPS-dataset/
 .DS_Store
+
+# Secrets
+.env
+backend/.env
+
+# Generated results
+output/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Node / Next.js
+node_modules/
+frontend/.next/
+frontend/out/
+*.log
