@@ -1,0 +1,40 @@
+---
+description: How to start the Grid Pulse app when the user says "run"
+alwaysApply: true
+---
+
+# Running the app ("run" shortcut)
+
+When the user writes just **"run"** (or "run it" / "start the app"), start BOTH servers
+in the background and confirm they are healthy. Do not ask for more detail.
+
+## Steps
+
+1. Free the ports if something is already listening (avoid "port in use"):
+   - backend: stop any `python.exe` whose command line contains `uvicorn`
+   - frontend: stop any `node.exe` whose command line contains `next`
+2. Start the backend (Python venv, port 8000):
+
+```powershell
+cd "c:\Users\jachy\Desktop\Vysoká\práce\cursor\hackaton\backend"
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
+```
+
+3. Start the frontend (Node, port 3000):
+
+```powershell
+cd "c:\Users\jachy\Desktop\Vysoká\práce\cursor\hackaton\frontend"
+npm run dev
+```
+
+4. Verify and report the URLs:
+   - backend health: `GET http://127.0.0.1:8000/health` should be `{"status":"ok", ...}`
+   - frontend: `http://localhost:3000` should return 200
+
+## Notes
+
+- Both run as long-lived background processes; the backend has NO auto-reload, so
+  after editing `backend/.env` or backend code it must be restarted.
+- The backend reads `backend/.env` (`LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`).
+  Without a key it runs in mock LLM mode; nothing breaks.
+- App URL to open: http://localhost:3000
