@@ -7,10 +7,13 @@ the whole tool-calling loop is testable with no API key.
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from .. import config
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -57,10 +60,16 @@ class RealProvider:
         if tools:
             kwargs["tools"] = tools
             kwargs["tool_choice"] = "auto"
+            kwargs["parallel_tool_calls"] = False
+        tool_names = [t["function"]["name"] for t in (tools or [])]
+        log.debug("LLM request | model=%s tools=%s parallel_tool_calls=%s", self._model, tool_names, kwargs.get("parallel_tool_calls"))
         try:
             completion = self._client.chat.completions.create(**kwargs)
         except Exception as exc:
+            log.error("LLM error | model=%s tools=%s | %s", self._model, tool_names, exc)
             raise LLMProviderError(f"LLM request failed for model '{self._model}': {exc}") from exc
+        finish = completion.choices[0].finish_reason
+        log.debug("LLM response | finish_reason=%s tool_calls=%s", finish, bool(completion.choices[0].message.tool_calls))
         message = completion.choices[0].message
         tool_calls: list[ToolCall] = []
         raw_message: dict[str, Any] = {"role": "assistant"}
