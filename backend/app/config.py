@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 
-load_dotenv(BACKEND_ROOT / ".env")
+load_dotenv(BACKEND_ROOT / ".env", override=True)
 
 def _normalized_name(path: Path) -> str:
     return unicodedata.normalize("NFC", path.name)
@@ -65,9 +65,9 @@ V_PU_MIN = float(os.getenv("V_PU_MIN", "0.95"))
 V_PU_MAX = float(os.getenv("V_PU_MAX", "1.05"))
 
 # --- LLM ---
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
-LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.5-flash")
-LLM_API_KEY = os.getenv("LLM_API_KEY", "")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
+LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "").strip()
 LLM_MAX_TOOL_ITERATIONS = int(os.getenv("LLM_MAX_TOOL_ITERATIONS", "6"))
 
 
