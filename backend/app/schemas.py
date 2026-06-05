@@ -19,6 +19,8 @@ class BusVoltage(BaseModel):
     region: str
     vm_pu: float
     in_band: bool
+    min_v_pu: float
+    max_v_pu: float
 
 
 class RegionBalance(BaseModel):
@@ -32,6 +34,7 @@ class BindingConstraint(BaseModel):
     element: str
     kind: Literal["line", "trafo"]
     loading_percent: float
+    within_limits: bool
 
 
 class GridState(BaseModel):

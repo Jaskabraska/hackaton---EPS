@@ -40,7 +40,7 @@ def _voltage_alert(violation, idx: int) -> dict:
         "element": violation.bus_name,
         "category": "voltage",
         "title": f"Voltage out of band at {violation.bus_name} ({violation.vm_pu:.3f} p.u.)",
-        "what": f"Bus {violation.bus_name} in {violation.region} sits at {violation.vm_pu:.3f} p.u., outside {config.V_PU_MIN}-{config.V_PU_MAX}.",
+        "what": f"Bus {violation.bus_name} in {violation.region} sits at {violation.vm_pu:.3f} p.u., outside {violation.min_v_pu}-{violation.max_v_pu}.",
         "action": "Adjust reactive power / tap settings near the bus or switch a nearby source.",
         "impact_risk": "Sustained out-of-band voltage risks equipment and, if low, voltage collapse.",
         "financial": None,
@@ -53,18 +53,26 @@ def _forecast_alert(gs, idx: int, horizon_h: int) -> dict | None:
     if growth is None or gs.binding_constraint is None:
         return None
     projected = gs.binding_constraint.loading_percent * growth["ratio"]
-    if projected <= config.LINE_ALERT_PCT:
+
+    # Escalation: the binding element is forecast to cross its loading-alert threshold.
+    if projected > config.LINE_ALERT_PCT:
+        severity = "CRITICAL" if projected > 100.0 else "HIGH"
+    # Watch: loadings stay within limits, but day-ahead load is rising materially.
+    elif growth["ratio"] >= config.FORECAST_WATCH_RATIO:
+        severity = "MEDIUM"
+    else:
         return None
-    severity = "CRITICAL" if projected > 100.0 else "HIGH"
+
     cost = economics.estimate_redispatch_cost(delta_mw=10, hours=horizon_h)
+    growth_pct = (growth["ratio"] - 1.0) * 100.0
     return {
         "id": f"ALR-{idx:03d}",
         "severity": severity,
         "element": gs.binding_constraint.element,
         "category": "line_forecast",
         "title": f"Forecast: {gs.binding_constraint.element} projected to {projected:.0f}% within {horizon_h} h",
-        "what": f"Day-ahead load rises from {growth['load_now_mw']} to {growth['load_horizon_mw']} MW "
-        f"(x{growth['ratio']}); the binding element would reach ~{projected:.0f}%.",
+        "what": f"Day-ahead load rises {growth_pct:+.0f}% from {growth['load_now_mw']} to "
+        f"{growth['load_horizon_mw']} MW over {horizon_h} h; the most-loaded element would reach ~{projected:.0f}%.",
         "action": "Pre-arrange reserves: charge storage, pre-book redispatch and demand response before the peak.",
         "impact_risk": "Reactive handling would force emergency shedding; proactive reserves hold N-1 for a fraction of the cost.",
         "financial": cost,
@@ -85,18 +93,31 @@ def generate_alerts(value: str, horizon_h: int = 2, write: bool = False) -> dict
         alerts.append(_voltage_alert(violation, idx))
         idx += 1
 
-    forecast_alert = _forecast_alert(gs, idx, horizon_h)
-    if forecast_alert is not None:
+    # Forecast-driven look-ahead: the requested horizon plus a 6-hour warning.
+    seen_forecasts: set[tuple[str, str]] = set()
+    for horizon in dict.fromkeys([horizon_h, 6]):
+        forecast_alert = _forecast_alert(gs, idx, horizon)
+        if forecast_alert is None:
+            continue
+        signature = (forecast_alert["element"], forecast_alert["severity"])
+        if signature in seen_forecasts:
+            continue
+        seen_forecasts.add(signature)
         alerts.append(forecast_alert)
         idx += 1
 
     binding = gs.binding_constraint
+    if binding is None:
+        headline = "System within limits; hold reserves for the forecast peak"
+    elif binding.within_limits:
+        headline = (
+            f"Most loaded element {binding.element} at {binding.loading_percent:.0f}%, within limits; "
+            "hold reserves for the forecast peak"
+        )
+    else:
+        headline = f"Relieve {binding.element} (currently {binding.loading_percent:.0f}%) before the forecast peak"
     recommendation = {
-        "headline": (
-            f"Relieve {binding.element} (currently {binding.loading_percent:.0f}%) before the forecast peak"
-            if binding is not None
-            else "System within limits; hold reserves for the forecast peak"
-        ),
+        "headline": headline,
         "actions_ranked": [
             {
                 "action": "Redispatch: raise cheap regulating generation near the deficit",

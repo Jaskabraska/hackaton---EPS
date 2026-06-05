@@ -35,6 +35,21 @@ def test_dispatch_unknown_tool():
     assert "error" in tools.dispatch("nope", {}, "2024_01_01_18_00_00")
 
 
+def test_get_connections_in_tool_schemas():
+    names = {t["function"]["name"] for t in tools.TOOL_SCHEMAS}
+    assert "get_connections" in names
+
+
+def test_get_connections_missing_bus_returns_error():
+    assert "error" in tools.dispatch("get_connections", {}, "2024_01_01_18_00_00")
+
+
+@needs_dataset
+def test_get_connections_dispatch_for_bus_003():
+    result = tools.dispatch("get_connections", {"bus": "bus_003"}, "2024_01_01_18_00_00")
+    assert {n["bus_name"] for n in result["connected_to"]} == {"bus_001", "bus_005", "bus_012"}
+
+
 def test_propose_action_dispatch_builds_action():
     action = tools.dispatch(
         tools.PROPOSE_ACTION,
@@ -72,3 +87,12 @@ def test_shift_summary_deterministic_gather(monkeypatch):
     assert summary.window_end == "2024_01_01_18_00_00"
     assert summary.events
     assert (config.OUTPUT_DIR / "shift_summary.json").exists()
+
+
+@needs_dataset
+def test_shift_summary_byte_identical_across_calls(monkeypatch):
+    monkeypatch.setattr(config, "LLM_API_KEY", "")
+    summaries = [
+        orchestrator.shift_summary("2024_01_01_18_00_00", window_h=12).summary for _ in range(3)
+    ]
+    assert summaries[0] == summaries[1] == summaries[2]

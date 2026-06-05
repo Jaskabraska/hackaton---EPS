@@ -31,7 +31,13 @@ class LLMResponse:
 
 
 class Provider(Protocol):
-    def chat(self, messages: list[dict[str, Any]], tools: list[dict] | None = None) -> LLMResponse: ...
+    def chat(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict] | None = None,
+        temperature: float | None = None,
+        seed: int | None = None,
+    ) -> LLMResponse: ...
 
 
 class LLMProviderError(RuntimeError):
@@ -55,12 +61,22 @@ class RealProvider:
         except json.JSONDecodeError:
             return {}
 
-    def chat(self, messages: list[dict[str, Any]], tools: list[dict] | None = None) -> LLMResponse:
+    def chat(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict] | None = None,
+        temperature: float | None = None,
+        seed: int | None = None,
+    ) -> LLMResponse:
         kwargs: dict[str, Any] = {"model": self._model, "messages": messages}
         if tools:
             kwargs["tools"] = tools
             kwargs["tool_choice"] = "auto"
             kwargs["parallel_tool_calls"] = False
+        if temperature is not None:
+            kwargs["temperature"] = temperature
+        if seed is not None:
+            kwargs["seed"] = seed
         tool_names = [t["function"]["name"] for t in (tools or [])]
         log.debug("LLM request | model=%s tools=%s parallel_tool_calls=%s", self._model, tool_names, kwargs.get("parallel_tool_calls"))
         try:
@@ -107,7 +123,13 @@ class MockProvider:
 
     FINAL_TEXT = "Mock summary: grid state retrieved via tool call; all numbers come from tools."
 
-    def chat(self, messages: list[dict[str, Any]], tools: list[dict] | None = None) -> LLMResponse:
+    def chat(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict] | None = None,
+        temperature: float | None = None,
+        seed: int | None = None,
+    ) -> LLMResponse:
         has_tool_result = any(m.get("role") == "tool" for m in messages)
         if has_tool_result or not tools:
             return LLMResponse(content=self.FINAL_TEXT, raw_assistant_message={"role": "assistant", "content": self.FINAL_TEXT})

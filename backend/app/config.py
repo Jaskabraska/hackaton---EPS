@@ -61,8 +61,12 @@ GLOSSARY_PATH = Path(__file__).resolve().parent / "llm" / "glossary.json"
 # --- Thresholds ---
 LINE_ALERT_PCT = float(os.getenv("LINE_ALERT_PCT", "80"))
 TRAFO_ALERT_PCT = float(os.getenv("TRAFO_ALERT_PCT", "90"))
+# Fallback voltage band only; per-bus min_vm_pu/max_vm_pu from the snapshot take precedence.
 V_PU_MIN = float(os.getenv("V_PU_MIN", "0.95"))
 V_PU_MAX = float(os.getenv("V_PU_MAX", "1.05"))
+# Day-ahead load growth over the horizon at/above this ratio raises a forecast "watch"
+# even when the binding element stays below the loading-alert threshold.
+FORECAST_WATCH_RATIO = float(os.getenv("FORECAST_WATCH_RATIO", "1.10"))
 
 # --- LLM ---
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
