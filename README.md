@@ -23,10 +23,12 @@ Backend = single **FastAPI** file. No model training. Domain glossary injected a
 | `Grid Pulse Challenge(1).pdf` | Official challenge brief |
 | `Grid_Pulse_MVP_plan.md` | MVP plan — maximum value, minimum time |
 | `Grid_Pulse_koncept.md` | Full application concept (physics explanation, demo scenario) |
+| `grid_pulse_build_plan_12c911db.plan.md` | Detailed phased build plan (backend + frontend + LLM) |
 | `grid_pulse_city_demo.html` | Interactive dispatch mockup (city map + alerts + AI summary) |
 | `grid_pulse_map.html` | Grid map view |
 | `grid_state.json` | Example network state snapshot |
 | `alerts.json` | Example alerts with AI recommendations |
+| `glossary.json` | Domain glossary of Czech power-grid abbreviations injected into LLM prompts |
 | `.gitignore` | Excludes the local ČEPS dataset folder (too large for GitHub) |
 
 > The `greenhack-2026-ČEPS-dataset/` folder is intentionally excluded from this repository (8 760 hourly pandapower JSON snapshots).
