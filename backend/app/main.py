@@ -9,6 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import config
+from .analysis import alerts
 from .grid import contingency, state
 from .schemas import ContingencyResult, GridState
 
@@ -47,3 +48,11 @@ def get_n1(element: str, datetime: str = "2024_01_01_18_00_00") -> ContingencyRe
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/alerts")
+def get_alerts(datetime: str = "2024_01_01_18_00_00", horizon_h: int = 2) -> dict:
+    try:
+        return alerts.generate_alerts(datetime, horizon_h=horizon_h, write=True)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
