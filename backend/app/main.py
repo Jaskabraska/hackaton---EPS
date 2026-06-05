@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import config
 from .analysis import alerts
-from .grid import contingency, state
+from .grid import contingency, state, topology
 from .llm import orchestrator
 from .schemas import (
     ChatRequest,
@@ -45,6 +45,14 @@ def health() -> dict:
 def get_state(datetime: str = "2024_01_01_18_00_00") -> GridState:
     try:
         return state.compute_state(datetime, write=True)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/map")
+def get_map(datetime: str = "2024_01_01_18_00_00") -> dict:
+    try:
+        return topology.build_map(datetime, write=True)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
