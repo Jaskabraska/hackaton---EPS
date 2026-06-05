@@ -1,0 +1,406 @@
+{
+  "meta": {
+    "city": "Voltava City (fiktivní)",
+    "system": "DEMO – ilustrativní data pro validaci konceptu",
+    "datetime": "2026-01-15T18:00:00",
+    "scenario": "Zimní pracovní den, večerní špička",
+    "disclaimer": "Všechna čísla jsou vymyšlená. Slouží k ukázce, jak by aplikace fungovala nad reálnými daty (typově odpovídá load-flow snapshotu).",
+    "limits": {
+      "v_pu_min": 0.95,
+      "v_pu_max": 1.05,
+      "line_alert_pct": 80,
+      "trafo_alert_pct": 90
+    }
+  },
+  "summary": {
+    "total_load_mw": 225,
+    "total_gen_local_mw": 117,
+    "import_mw": 108,
+    "binding_constraint": {
+      "element": "R-CENTRUM / transformátor T2",
+      "type": "transformer",
+      "loading_pct": 91,
+      "reason": "T1 v plánované údržbě → T2 nese celé Centrum sama"
+    },
+    "n1_secure": false,
+    "n1_worst": {
+      "trip": "R-CENTRUM/T2",
+      "result": "ztráta napájení Centra → nutné odlehčení ~40 MW",
+      "resulting_loading_pct": 168
+    }
+  },
+  "nodes": [
+    {
+      "id": "EXPO-WEST",
+      "name": "Expo-West (import)",
+      "type": "import",
+      "district": "SEVER",
+      "x": 120,
+      "y": 110,
+      "kv": 110,
+      "p_load": 0,
+      "p_gen": 70,
+      "p_cap": 150,
+      "v_pu": 1.02,
+      "role": "Hraniční napájecí uzel do nadřazené soustavy"
+    },
+    {
+      "id": "VTE-SEVER",
+      "name": "VTE Severní vrch",
+      "type": "wind",
+      "district": "SEVER",
+      "x": 840,
+      "y": 80,
+      "kv": 22,
+      "p_load": 0,
+      "p_gen": 22,
+      "p_cap": 30,
+      "v_pu": 1.03,
+      "role": "Větrný park"
+    },
+    {
+      "id": "SIDL-SEVER",
+      "name": "Sídliště Sever",
+      "type": "prosumer",
+      "district": "SEVER",
+      "x": 520,
+      "y": 120,
+      "kv": 22,
+      "p_load": 25,
+      "p_gen": 0,
+      "p_cap": 8,
+      "v_pu": 1.01,
+      "role": "Obytná čtvrť s FV na střechách (prosumer)"
+    },
+    {
+      "id": "R-SEVER",
+      "name": "Rozvodna Sever",
+      "type": "substation",
+      "district": "SEVER",
+      "x": 330,
+      "y": 185,
+      "kv": 110,
+      "p_load": 35,
+      "p_gen": 0,
+      "p_cap": 0,
+      "v_pu": 1.01,
+      "role": "Transformovna 110/22 kV",
+      "transformers": [
+        {
+          "name": "T1",
+          "loading_pct": 76,
+          "cap_mva": 63,
+          "in_service": true
+        }
+      ]
+    },
+    {
+      "id": "R-CENTRUM",
+      "name": "Rozvodna Centrum",
+      "type": "substation",
+      "district": "CENTRUM",
+      "x": 420,
+      "y": 330,
+      "kv": 110,
+      "p_load": 43,
+      "p_gen": 0,
+      "p_cap": 0,
+      "v_pu": 0.985,
+      "role": "Hlavní transformovna 110/22 kV",
+      "transformers": [
+        {
+          "name": "T1",
+          "loading_pct": 0,
+          "cap_mva": 63,
+          "in_service": false,
+          "note": "plánovaná údržba"
+        },
+        {
+          "name": "T2",
+          "loading_pct": 91,
+          "cap_mva": 63,
+          "in_service": true,
+          "note": "nese celé Centrum sama"
+        }
+      ]
+    },
+    {
+      "id": "DATACENTRUM",
+      "name": "Datacentrum Nord",
+      "type": "critical",
+      "district": "CENTRUM",
+      "x": 660,
+      "y": 300,
+      "kv": 22,
+      "p_load": 40,
+      "p_gen": 0,
+      "p_cap": 0,
+      "v_pu": 0.99,
+      "role": "Kritický odběr (24/7), tolerance výpadku nízká"
+    },
+    {
+      "id": "NEMOCNICE",
+      "name": "Fakultní nemocnice",
+      "type": "critical",
+      "district": "CENTRUM",
+      "x": 730,
+      "y": 395,
+      "kv": 22,
+      "p_load": 12,
+      "p_gen": 0,
+      "p_cap": 0,
+      "v_pu": 0.99,
+      "role": "Kritický odběr (chráněný)"
+    },
+    {
+      "id": "BESS",
+      "name": "Bateriové úložiště Centrum",
+      "type": "storage",
+      "district": "CENTRUM",
+      "x": 230,
+      "y": 360,
+      "kv": 22,
+      "p_load": 0,
+      "p_gen": 15,
+      "p_cap": 20,
+      "v_pu": 1.0,
+      "soc_pct": 35,
+      "e_cap_mwh": 40,
+      "role": "BESS 20 MW / 40 MWh, vybíjí"
+    },
+    {
+      "id": "EXPO-EAST",
+      "name": "Expo-East (import)",
+      "type": "import",
+      "district": "CENTRUM",
+      "x": 910,
+      "y": 340,
+      "kv": 110,
+      "p_load": 0,
+      "p_gen": 38,
+      "p_cap": 120,
+      "v_pu": 1.01,
+      "role": "Záložní hraniční napájecí uzel"
+    },
+    {
+      "id": "R-PRISTAV",
+      "name": "Rozvodna Přístav",
+      "type": "substation",
+      "district": "PRISTAV",
+      "x": 430,
+      "y": 545,
+      "kv": 110,
+      "p_load": 15,
+      "p_gen": 0,
+      "p_cap": 0,
+      "v_pu": 1.0,
+      "role": "Transformovna 110/22 kV",
+      "transformers": [
+        {
+          "name": "T1",
+          "loading_pct": 84,
+          "cap_mva": 40,
+          "in_service": true
+        }
+      ]
+    },
+    {
+      "id": "CHP-TEPL",
+      "name": "Teplárna Přístav (CHP)",
+      "type": "chp",
+      "district": "PRISTAV",
+      "x": 230,
+      "y": 565,
+      "kv": 110,
+      "p_load": 0,
+      "p_gen": 80,
+      "p_cap": 100,
+      "v_pu": 1.02,
+      "role": "Kombinovaná výroba el.+tepla, regulovatelná"
+    },
+    {
+      "id": "FVE-JIH",
+      "name": "FVE Přístav-Jih",
+      "type": "solar",
+      "district": "PRISTAV",
+      "x": 690,
+      "y": 585,
+      "kv": 22,
+      "p_load": 0,
+      "p_gen": 0,
+      "p_cap": 45,
+      "v_pu": 1.0,
+      "role": "Solární park 45 MWp (večer 0 MW)"
+    },
+    {
+      "id": "PRUMYSL",
+      "name": "Průmyslová zóna",
+      "type": "load",
+      "district": "PRISTAV",
+      "x": 830,
+      "y": 520,
+      "kv": 22,
+      "p_load": 55,
+      "p_gen": 0,
+      "p_cap": 0,
+      "v_pu": 0.995,
+      "role": "Velkoodběr (přerušitelný kontrakt / DR)"
+    }
+  ],
+  "lines": [
+    {
+      "id": "L01",
+      "from": "EXPO-WEST",
+      "to": "R-SEVER",
+      "kv": 110,
+      "cap_mw": 150,
+      "flow_mw": 70,
+      "loading_pct": 47,
+      "tie": false
+    },
+    {
+      "id": "L02",
+      "from": "R-SEVER",
+      "to": "R-CENTRUM",
+      "kv": 110,
+      "cap_mw": 120,
+      "flow_mw": 98,
+      "loading_pct": 82,
+      "tie": true,
+      "corridor": "SEVER↔CENTRUM"
+    },
+    {
+      "id": "L03",
+      "from": "VTE-SEVER",
+      "to": "R-SEVER",
+      "kv": 22,
+      "cap_mw": 40,
+      "flow_mw": 22,
+      "loading_pct": 55,
+      "tie": false
+    },
+    {
+      "id": "L04",
+      "from": "SIDL-SEVER",
+      "to": "R-SEVER",
+      "kv": 22,
+      "cap_mw": 35,
+      "flow_mw": 25,
+      "loading_pct": 71,
+      "tie": false
+    },
+    {
+      "id": "L05",
+      "from": "R-CENTRUM",
+      "to": "DATACENTRUM",
+      "kv": 22,
+      "cap_mw": 60,
+      "flow_mw": 40,
+      "loading_pct": 67,
+      "tie": false
+    },
+    {
+      "id": "L06",
+      "from": "R-CENTRUM",
+      "to": "NEMOCNICE",
+      "kv": 22,
+      "cap_mw": 25,
+      "flow_mw": 12,
+      "loading_pct": 48,
+      "tie": false
+    },
+    {
+      "id": "L07",
+      "from": "R-CENTRUM",
+      "to": "BESS",
+      "kv": 22,
+      "cap_mw": 30,
+      "flow_mw": 15,
+      "loading_pct": 50,
+      "tie": false
+    },
+    {
+      "id": "L08",
+      "from": "EXPO-EAST",
+      "to": "R-CENTRUM",
+      "kv": 110,
+      "cap_mw": 120,
+      "flow_mw": 38,
+      "loading_pct": 32,
+      "tie": false
+    },
+    {
+      "id": "L09",
+      "from": "R-PRISTAV",
+      "to": "R-CENTRUM",
+      "kv": 110,
+      "cap_mw": 100,
+      "flow_mw": 28,
+      "loading_pct": 28,
+      "tie": true,
+      "corridor": "PRISTAV↔CENTRUM"
+    },
+    {
+      "id": "L10",
+      "from": "CHP-TEPL",
+      "to": "R-PRISTAV",
+      "kv": 110,
+      "cap_mw": 90,
+      "flow_mw": 80,
+      "loading_pct": 89,
+      "tie": false
+    },
+    {
+      "id": "L11",
+      "from": "FVE-JIH",
+      "to": "R-PRISTAV",
+      "kv": 22,
+      "cap_mw": 50,
+      "flow_mw": 0,
+      "loading_pct": 0,
+      "tie": false
+    },
+    {
+      "id": "L12",
+      "from": "PRUMYSL",
+      "to": "R-PRISTAV",
+      "kv": 22,
+      "cap_mw": 70,
+      "flow_mw": 55,
+      "loading_pct": 79,
+      "tie": false
+    }
+  ],
+  "regions": [
+    {
+      "id": "SEVER",
+      "name": "Sever",
+      "load_mw": 60,
+      "gen_mw": 22,
+      "balance_mw": -38,
+      "tie_cap_mw": 120,
+      "tie_flow_mw": 98,
+      "tie_loading_pct": 82
+    },
+    {
+      "id": "CENTRUM",
+      "name": "Centrum",
+      "load_mw": 95,
+      "gen_mw": 15,
+      "balance_mw": -80,
+      "tie_cap_mw": 220,
+      "tie_flow_mw": 164,
+      "tie_loading_pct": 75
+    },
+    {
+      "id": "PRISTAV",
+      "name": "Přístav",
+      "load_mw": 70,
+      "gen_mw": 80,
+      "balance_mw": 10,
+      "tie_cap_mw": 100,
+      "tie_flow_mw": 28,
+      "tie_loading_pct": 28
+    }
+  ]
+}

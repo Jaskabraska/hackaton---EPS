@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="cs"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grid Pulse — Dispečink Voltava City (DEMO)</title>
+<style>
+:root{--bg:#0b111d;--panel:#121a2b;--panel2:#1a2438;--line:#27324a;--txt:#e8eef8;--mut:#8593ad;
+--accent:#39a7ff;--sever:#5b8def;--centrum:#46c89a;--pristav:#e8a33d;
+--ok:#2fbf85;--warn:#f2c14e;--hot:#f0883e;--crit:#ef4d4d;--prod:#ffcf4d;--load:#7aa2d6;--imp:#b07cf0;}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+font-family:'Inter',system-ui,'Segoe UI',Roboto,sans-serif;overflow:hidden;font-size:13px}
+#app{display:flex;flex-direction:column;height:100vh}
+header{display:flex;align-items:center;gap:14px;padding:9px 16px;background:linear-gradient(180deg,#13203a,#0d1424);border-bottom:1px solid var(--line)}
+header h1{font-size:15px;margin:0;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+header h1 .sub{color:var(--mut);font-weight:400;font-size:11px;margin-left:6px}
+.demo-badge{background:#3a2a12;color:#f2c14e;border:1px solid #6b4e1e;border-radius:5px;font-size:10px;font-weight:700;padding:2px 7px;letter-spacing:.5px}
+.kpis{display:flex;gap:7px;margin-left:auto}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 11px;min-width:78px}
+.kpi .lab{font-size:8.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+.kpi .val{font-size:15px;font-weight:800;margin-top:1px}
+.kpi.bad .val{color:var(--crit)} .kpi.warn .val{color:var(--warn)} .kpi.good .val{color:var(--ok)}
+main{flex:1;display:flex;min-height:0}
+#stage{flex:1;position:relative;background:#0a1120}
+svg#map{width:100%;height:100%;display:block}
+.dist-label{font-size:15px;font-weight:800;letter-spacing:4px;opacity:.32;text-transform:uppercase}
+.street{stroke:#16203360;stroke-width:6} .street.main{stroke:#1b2740a0;stroke-width:10}
+.bldg{fill:#141d30;stroke:#1d293f;stroke-width:.5}
+.win{fill:#f2c14e;opacity:.5}
+.edge{stroke-linecap:round;cursor:pointer}
+.flow{stroke-dasharray:2 7;animation:dash 1s linear infinite;pointer-events:none}
+@keyframes dash{to{stroke-dashoffset:-18}}
+.node{cursor:pointer}
+.node text{font-size:8.5px;fill:#aebbd2;text-anchor:middle;font-weight:600;pointer-events:none}
+.prodGlow{filter:drop-shadow(0 0 5px #ffcf4d88)}
+aside{width:360px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.flowstrip{display:flex;align-items:center;gap:4px;padding:9px 12px;border-bottom:1px solid var(--line);background:#0e1626;font-size:10.5px}
+.fstep{flex:1;text-align:center;color:var(--mut);position:relative}
+.fstep b{display:block;color:#cdd8ea;font-size:11px}
+.fstep.act b{color:var(--accent)}
+.fstep .n{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--panel2);font-size:9px;line-height:16px;margin-bottom:2px}
+.fstep.act .n{background:var(--accent);color:#06101e}
+.arrow{color:#475569}
+.scroll{overflow-y:auto;padding:12px;flex:1}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:11px}
+.card h3{margin:0 0 7px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);display:flex;align-items:center;gap:6px}
+.ai{background:linear-gradient(160deg,#15233d,#101a2e);border:1px solid #2a3e63}
+.ai h3{color:#7fc0ff}
+.ai p{margin:6px 0;line-height:1.5;color:#dde6f3}
+.ai .tag{display:inline-block;background:#0e1d33;border:1px solid #2a3e63;border-radius:6px;padding:2px 7px;font-size:10px;color:#9fc4ee;margin:2px 3px 2px 0}
+.alert{border-left:3px solid var(--mut);background:var(--panel2);border-radius:8px;padding:9px 10px;margin-bottom:8px;cursor:pointer;transition:.1s}
+.alert:hover{background:#1f2b42}
+.alert.CRITICAL{border-left-color:var(--crit)} .alert.HIGH{border-left-color:var(--hot)}
+.alert.MEDIUM{border-left-color:var(--warn)} .alert.LOW{border-left-color:var(--accent)}
+.alert .sev{font-size:9px;font-weight:800;letter-spacing:.5px;padding:1px 6px;border-radius:4px}
+.sev.CRITICAL{background:#3a1414;color:#ff7b7b} .sev.HIGH{background:#3a2412;color:#ffae6b}
+.sev.MEDIUM{background:#3a3312;color:#f2d36b} .sev.LOW{background:#12263a;color:#7fc0ff}
+.alert .ti{font-weight:700;margin:5px 0 2px;font-size:12px;line-height:1.3}
+.alert .el{font-size:10px;color:var(--mut)}
+.rec{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed #283448;font-size:11.5px}
+.rec:last-child{border:0}
+.rec .eff{color:var(--mut);font-size:10px}
+.rec .cz{color:var(--ok);font-weight:700;white-space:nowrap}
+.pred{display:flex;gap:8px;margin-bottom:7px}
+.pwid{flex:1;background:#0e1626;border:1px solid var(--line);border-radius:8px;padding:7px;text-align:center}
+.pwid .ic{font-size:17px} .pwid .l{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.pwid .v{font-size:11px;font-weight:700;margin-top:2px}
+.sig{font-size:10.5px;color:#b9c6db;padding:3px 0;border-bottom:1px dashed #283448}
+.sig:last-child{border:0} .sig b{color:#fff}
+.save{background:#10241c;border:1px solid #1f5a3f;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:11px}
+.save b{color:var(--ok);font-size:15px}
+#inspector{position:absolute;left:14px;bottom:14px;width:280px;background:#0c1424f2;border:1px solid var(--line);border-radius:12px;padding:12px;display:none;box-shadow:0 10px 40px #000a;backdrop-filter:blur(4px)}
+#inspector h4{margin:0 0 2px;font-size:13px} #inspector .sub{color:var(--mut);font-size:10px;margin-bottom:8px}
+.metric{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed #283448;font-size:11.5px}
+.metric:last-child{border:0} .metric b{font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:3px;background:#1d2840;margin-top:3px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px}
+#tip{position:absolute;pointer-events:none;background:#0b1322f0;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:11px;opacity:0;transition:.08s;z-index:20;max-width:210px}
+#tip .row{display:flex;justify-content:space-between;gap:12px;color:#c3cdde}#tip b{color:#fff}
+.legend{position:absolute;top:12px;left:12px;background:#0c1424d0;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:10.5px;max-width:225px}
+.legend .r{display:flex;align-items:center;gap:7px;margin:3px 0;color:#c3cdde}
+.legend svg{flex:none}
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:40;padding:24px}
+#modal .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;padding:20px}
+#modal h2{margin:0 0 4px;font-size:17px}
+.f5{margin:11px 0;padding:10px 12px;background:var(--panel2);border-radius:9px;border-left:3px solid var(--accent)}
+.f5 .k{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--accent);font-weight:700;margin-bottom:3px}
+.f5 p{margin:0;line-height:1.5;color:#dce5f2}
+.fin{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.fin div{flex:1;min-width:120px;background:#0e1626;border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center}
+.fin .l{font-size:9px;color:var(--mut);text-transform:uppercase}.fin .v{font-size:15px;font-weight:800;margin-top:2px}
+.closeb{float:right;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:5px 11px;cursor:pointer}
+button.run{background:var(--accent);color:#06101e;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-size:11px}
+.illu{font-size:9.5px;color:#6f7c93;font-style:italic;margin-top:4px}
+</style></head>
+<body>
+<div id="app">
+ <header>
+   <h1>⚡ GRID PULSE <span class="sub">Dispečink · Voltava City</span></h1>
+   <span class="demo-badge">DEMO · ILUSTRATIVNÍ DATA</span>
+   <div class="kpis" id="kpis"></div>
+ </header>
+ <main>
+   <div id="stage">
+     <svg id="map" viewBox="0 0 980 660" preserveAspectRatio="xMidYMid meet"></svg>
+     <div class="legend" id="legend"></div>
+     <div id="inspector"></div>
+     <div id="tip"></div>
+   </div>
+   <aside>
+     <div class="flowstrip" id="flowstrip"></div>
+     <div class="scroll" id="side"></div>
+   </aside>
+ </main>
+</div>
+<div id="modal"><div class="box" id="modalbox"></div></div>
+<script>
+const B={"grid":{"meta":{"city":"Voltava City (fiktivní)","system":"DEMO – ilustrativní data pro validaci konceptu","datetime":"2026-01-15T18:00:00","scenario":"Zimní pracovní den, večerní špička","disclaimer":"Všechna čísla jsou vymyšlená. Slouží k ukázce, jak by aplikace fungovala nad reálnými daty (typově odpovídá load-flow snapshotu).","limits":{"v_pu_min":0.95,"v_pu_max":1.05,"line_alert_pct":80,"trafo_alert_pct":90}},"summary":{"total_load_mw":225,"total_gen_local_mw":117,"import_mw":108,"binding_constraint":{"element":"R-CENTRUM / transformátor T2","type":"transformer","loading_pct":91,"reason":"T1 v plánované údržbě → T2 nese celé Centrum sama"},"n1_secure":false,"n1_worst":{"trip":"R-CENTRUM/T2","result":"ztráta napájení Centra → nutné odlehčení ~40 MW","resulting_loading_pct":168}},"nodes":[{"id":"EXPO-WEST","name":"Expo-West (import)","type":"import","district":"SEVER","x":120,"y":110,"kv":110,"p_load":0,"p_gen":70,"p_cap":150,"v_pu":1.02,"role":"Hraniční napájecí uzel do nadřazené soustavy"},{"id":"VTE-SEVER","name":"VTE Severní vrch","type":"wind","district":"SEVER","x":840,"y":80,"kv":22,"p_load":0,"p_gen":22,"p_cap":30,"v_pu":1.03,"role":"Větrný park"},{"id":"SIDL-SEVER","name":"Sídliště Sever","type":"prosumer","district":"SEVER","x":520,"y":120,"kv":22,"p_load":25,"p_gen":0,"p_cap":8,"v_pu":1.01,"role":"Obytná čtvrť s FV na střechách (prosumer)"},{"id":"R-SEVER","name":"Rozvodna Sever","type":"substation","district":"SEVER","x":330,"y":185,"kv":110,"p_load":35,"p_gen":0,"p_cap":0,"v_pu":1.01,"role":"Transformovna 110/22 kV","transformers":[{"name":"T1","loading_pct":76,"cap_mva":63,"in_service":true}]},{"id":"R-CENTRUM","name":"Rozvodna Centrum","type":"substation","district":"CENTRUM","x":420,"y":330,"kv":110,"p_load":43,"p_gen":0,"p_cap":0,"v_pu":0.985,"role":"Hlavní transformovna 110/22 kV","transformers":[{"name":"T1","loading_pct":0,"cap_mva":63,"in_service":false,"note":"plánovaná údržba"},{"name":"T2","loading_pct":91,"cap_mva":63,"in_service":true,"note":"nese celé Centrum sama"}]},{"id":"DATACENTRUM","name":"Datacentrum Nord","type":"critical","district":"CENTRUM","x":660,"y":300,"kv":22,"p_load":40,"p_gen":0,"p_cap":0,"v_pu":0.99,"role":"Kritický odběr (24/7), tolerance výpadku nízká"},{"id":"NEMOCNICE","name":"Fakultní nemocnice","type":"critical","district":"CENTRUM","x":730,"y":395,"kv":22,"p_load":12,"p_gen":0,"p_cap":0,"v_pu":0.99,"role":"Kritický odběr (chráněný)"},{"id":"BESS","name":"Bateriové úložiště Centrum","type":"storage","district":"CENTRUM","x":230,"y":360,"kv":22,"p_load":0,"p_gen":15,"p_cap":20,"v_pu":1.0,"soc_pct":35,"e_cap_mwh":40,"role":"BESS 20 MW / 40 MWh, vybíjí"},{"id":"EXPO-EAST","name":"Expo-East (import)","type":"import","district":"CENTRUM","x":910,"y":340,"kv":110,"p_load":0,"p_gen":38,"p_cap":120,"v_pu":1.01,"role":"Záložní hraniční napájecí uzel"},{"id":"R-PRISTAV","name":"Rozvodna Přístav","type":"substation","district":"PRISTAV","x":430,"y":545,"kv":110,"p_load":15,"p_gen":0,"p_cap":0,"v_pu":1.0,"role":"Transformovna 110/22 kV","transformers":[{"name":"T1","loading_pct":84,"cap_mva":40,"in_service":true}]},{"id":"CHP-TEPL","name":"Teplárna Přístav (CHP)","type":"chp","district":"PRISTAV","x":230,"y":565,"kv":110,"p_load":0,"p_gen":80,"p_cap":100,"v_pu":1.02,"role":"Kombinovaná výroba el.+tepla, regulovatelná"},{"id":"FVE-JIH","name":"FVE Přístav-Jih","type":"solar","district":"PRISTAV","x":690,"y":585,"kv":22,"p_load":0,"p_gen":0,"p_cap":45,"v_pu":1.0,"role":"Solární park 45 MWp (večer 0 MW)"},{"id":"PRUMYSL","name":"Průmyslová zóna","type":"load","district":"PRISTAV","x":830,"y":520,"kv":22,"p_load":55,"p_gen":0,"p_cap":0,"v_pu":0.995,"role":"Velkoodběr (přerušitelný kontrakt / DR)"}],"lines":[{"id":"L01","from":"EXPO-WEST","to":"R-SEVER","kv":110,"cap_mw":150,"flow_mw":70,"loading_pct":47,"tie":false},{"id":"L02","from":"R-SEVER","to":"R-CENTRUM","kv":110,"cap_mw":120,"flow_mw":98,"loading_pct":82,"tie":true,"corridor":"SEVER↔CENTRUM"},{"id":"L03","from":"VTE-SEVER","to":"R-SEVER","kv":22,"cap_mw":40,"flow_mw":22,"loading_pct":55,"tie":false},{"id":"L04","from":"SIDL-SEVER","to":"R-SEVER","kv":22,"cap_mw":35,"flow_mw":25,"loading_pct":71,"tie":false},{"id":"L05","from":"R-CENTRUM","to":"DATACENTRUM","kv":22,"cap_mw":60,"flow_mw":40,"loading_pct":67,"tie":false},{"id":"L06","from":"R-CENTRUM","to":"NEMOCNICE","kv":22,"cap_mw":25,"flow_mw":12,"loading_pct":48,"tie":false},{"id":"L07","from":"R-CENTRUM","to":"BESS","kv":22,"cap_mw":30,"flow_mw":15,"loading_pct":50,"tie":false},{"id":"L08","from":"EXPO-EAST","to":"R-CENTRUM","kv":110,"cap_mw":120,"flow_mw":38,"loading_pct":32,"tie":false},{"id":"L09","from":"R-PRISTAV","to":"R-CENTRUM","kv":110,"cap_mw":100,"flow_mw":28,"loading_pct":28,"tie":true,"corridor":"PRISTAV↔CENTRUM"},{"id":"L10","from":"CHP-TEPL","to":"R-PRISTAV","kv":110,"cap_mw":90,"flow_mw":80,"loading_pct":89,"tie":false},{"id":"L11","from":"FVE-JIH","to":"R-PRISTAV","kv":22,"cap_mw":50,"flow_mw":0,"loading_pct":0,"tie":false},{"id":"L12","from":"PRUMYSL","to":"R-PRISTAV","kv":22,"cap_mw":70,"flow_mw":55,"loading_pct":79,"tie":false}],"regions":[{"id":"SEVER","name":"Sever","load_mw":60,"gen_mw":22,"balance_mw":-38,"tie_cap_mw":120,"tie_flow_mw":98,"tie_loading_pct":82},{"id":"CENTRUM","name":"Centrum","load_mw":95,"gen_mw":15,"balance_mw":-80,"tie_cap_mw":220,"tie_flow_mw":164,"tie_loading_pct":75},{"id":"PRISTAV","name":"Přístav","load_mw":70,"gen_mw":80,"balance_mw":10,"tie_cap_mw":100,"tie_flow_mw":28,"tie_loading_pct":28}]},"alerts":{"generated_at":"2026-01-15T18:02:11","source":"Grid Pulse — automatická analýza JSON síťového stavu","alerts":[{"id":"ALR-001","severity":"HIGH","element":"R-CENTRUM / T2","category":"transformer","title":"Transformátor T2 v Rozvodně Centrum se blíží limitu (91 %)","what":"Transformátor T2 (63 MVA) je zatížen na 91 % a zatížení stoupá s večerní špičkou. T1 je v plánované údržbě, takže Centrum napájí jediný stroj.","why":"Pravidlo: zatížení transformátoru > 90 % po dobu > 10 min při nedostupné záloze (N-1 porušeno). Signál: měřený proud T2 vs. jmenovitý proud + stav T1 = OUT.","action":"Snížit transit přes R-CENTRUM: navýšit výrobu Teplárny Přístav z 80 → 95 MW a přesměrovat tok jižním koridorem L09 (Přístav↔Centrum, dnes jen 28 %). Aktivovat 20 MW vybíjení BESS přímo v Centru.","alternative":"Místo dovozu přes přetížený sever (L02) krýt spotřebu Centra lokálně z jihu (CHP + baterie). Dnešní stav vozí výkon zbytečně přes T2; alternativa T2 odlehčí o ~25 MW.","impact_risk":"Bez zásahu: při dalším výpadku (N-1) T2 přetížení až 168 % → automatika odlehčí ~40 MW, riziko výpadku Datacentra a části Centra. Riziko poškození/zkrácení životnosti transformátoru.","financial":{"intervention_cost_czk":48000,"avoided_penalty_czk":2800000,"net_saving_czk":2752000,"note":"Náklad = vícevýroba CHP 15 MW × 2 h × ~1 600 Kč/MWh. Vyhnutá penalizace = odhad za nedodávku kritickému odběru + riziko HW."},"predictive_basis":null},{"id":"ALR-002","severity":"CRITICAL","element":"Koridor L02 (Sever↔Centrum)","category":"line_forecast","title":"Predikce: import koridor L02 překročí 100 % do ~2 h","what":"Příchod studené fronty zvýší spotřebu o ~8 % a současně klesne vítr → menší lokální výroba VTE Sever. Tok na L02 (dnes 82 %) by za ~2 h dosáhl ~103 %.","why":"Korelace externích signálů: weather forecast (teplota −6 °C → +8 % load) + wind forecast (pokles z 22 → 9 MW). Pravidlo: predikovaná zatíženost koridoru > 100 % v horizontu < 3 h.","action":"Předzásobit: nabít/podržet BESS na ≥ 80 % do 19:30, předjednat redispečink CHP +10 MW a přerušitelný kontrakt s Průmyslovou zónou (−10 MW na 2 h, demand response).","alternative":"Reaktivní řešení (čekat na překročení) by vynutilo nouzové odlehčení. Proaktivní příprava záloh udrží N-1 a stojí zlomek.","impact_risk":"Bez zásahu: přetížení L02, kaskádové přetížení T2, hrozí řízené odpojení částí Severu i Centra. Odhad nedodané energie 30–50 MWh.","financial":{"intervention_cost_czk":36000,"avoided_penalty_czk":1900000,"net_saving_czk":1864000,"note":"DR platba Průmyslu 10 MW × 2 h × 900 Kč/MWh + redispečink. Vyhnutá nedodávka a penalizace."},"predictive_basis":{"weather":"Studená fronta, −6 °C, +8 % spotřeba","wind":"Pokles větru 22→9 MW","horizon_h":2}},{"id":"ALR-003","severity":"MEDIUM","element":"FVE Přístav-Jih / L11","category":"overvoltage_forecast","title":"Predikce: zítřejší polední přebytek FV → riziko přepětí v Přístavu","what":"Satelitní data hlásí protrhání oblačnosti zítra 11–14 h. FVE Jih najede z 0 na ~40 MW, večerní spotřeba chybí → reverzní tok do R-Přístav a napětí roste k hornímu limitu.","why":"Signál: satellite/cloud-cover forecast (pokrytí < 15 %) + nízká polední spotřeba. Pravidlo: predikovaná výroba FV > lokální spotřeba → reverzní tok a U > 1,05 p.u.","action":"Naplánovat na poledne: nabíjení BESS (uložit přebytek), případně mírný curtailment FVE 5–8 MW, regulace jalového výkonu na R-Přístav.","alternative":"Místo zmaření přebytku (curtailment = ztráta tržby) přebytek uložit do baterie a využít na večerní špičku — dvojí úspora.","impact_risk":"Bez zásahu: přepětí, riziko odpojení FV ochranami a kolísání napětí pro Průmysl. Ztráta zelené energie.","financial":{"intervention_cost_czk":0,"avoided_penalty_czk":120000,"net_saving_czk":120000,"note":"Uložení 25 MWh do BESS místo curtailmentu; hodnota uložené energie + vyhnuté přepětí."},"predictive_basis":{"satellite":"Cloud cover < 15 % zítra 11–14 h","horizon_h":18}},{"id":"ALR-004","severity":"LOW","element":"BESS Centrum","category":"reserve","title":"Nízká rezerva BESS (SoC 35 %)","what":"Bateriové úložiště je na 35 % nabití — omezená rezerva pro krytí večerní špičky a pro scénář ALR-002.","why":"Pravidlo: SoC < 40 % v okně před predikovanou špičkou. Signál: telemetrie BESS.","action":"Dobít BESS z levné noční/odpolední energie před 19:00, prioritně před aktivací dle ALR-002.","alternative":"Ponechat nízký SoC by snížilo schopnost reagovat na přetížení; dobití je levné a zvyšuje flexibilitu.","impact_risk":"Bez zásahu: méně manévrovacího prostoru při špičce, nutnost dražšího redispečinku.","financial":{"intervention_cost_czk":9000,"avoided_penalty_czk":80000,"net_saving_czk":71000,"note":"Dobití ~14 MWh za levnější cenu vs. dražší zásah později."},"predictive_basis":null}],"recommendation_engine":{"headline":"Odlehčit T2 v Centru lokální výrobou z jihu a připravit zálohy na studenou frontu","actions_ranked":[{"action":"Redispečink: CHP Přístav 80 → 95 MW","effect":"T2 −25 MW, L02 −12 %","cost_czk":48000,"type":"redispatch"},{"action":"BESS Centrum: vybíjet 20 MW ve špičce","effect":"T2 −15 MW","cost_czk":6000,"type":"storage"},{"action":"Přesměrování toku na jižní koridor L09","effect":"využití volné kapacity (28→55 %)","cost_czk":0,"type":"reroute"},{"action":"Demand response: Průmysl −10 MW na 2 h","effect":"L02 −8 %, rezerva pro frontu","cost_czk":18000,"type":"demand_response"},{"action":"Dobít BESS před 19:00","effect":"rezerva pro ALR-002","cost_czk":9000,"type":"reserve"}],"total_intervention_czk":81000,"total_avoided_czk":4900000,"net_saving_czk_day":4819000}},"predictive":{"weather":{"now":"−1 °C, jasno","forecast_2h":"−6 °C, studená fronta","load_effect_pct":"+8 %"},"satellite":{"now":"oblačno 70 %","forecast_tomorrow_noon":"jasno, oblačnost < 15 %","solar_effect":"FVE 0 → 40 MW"},"wind":{"now":"22 MW","forecast_2h":"9 MW"},"external_signals":[{"signal":"Teplota ↓","rule":"−1 °C teploty ≈ +1,3 % spotřeby","applies_to":"ALR-002"},{"signal":"Rychlost větru ↓","rule":"výroba VTE ~ v³ → prudký pokles","applies_to":"ALR-002"},{"signal":"Oblačnost ↓","rule":"jasno v poledne → reverzní tok FV","applies_to":"ALR-003"}]}};
+const G=B.grid, AL=B.alerts, PR=B.predictive;
+const NS='http://www.w3.org/2000/svg';
+const DC={SEVER:'#5b8def',CENTRUM:'#46c89a',PRISTAV:'#e8a33d'};
+const svg=document.getElementById('map'), tip=document.getElementById('tip');
+const nById={}; G.nodes.forEach(n=>nById[n.id]=n);
+
+// seeded rng
+let _s=20260115; function rnd(){_s=(_s*1664525+1013904223)&0x7fffffff;return _s/0x7fffffff;}
+function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function loadColor(p){if(p<=0)return '#39507a';if(p<50)return mix('#2fbf85','#f2c14e',p/50);if(p<80)return mix('#f2c14e','#f0883e',(p-50)/30);return mix('#f0883e','#ef4d4d',Math.min(1,(p-80)/20));}
+function mix(a,b,t){const A=hx(a),C=hx(b);return`rgb(${r(A[0],C[0])},${r(A[1],C[1])},${r(A[2],C[2])})`;function r(x,y){return Math.round(x+(y-x)*t)}}
+function hx(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}
+
+// ---- districts ----
+const bands={SEVER:[28,232],CENTRUM:[240,452],PRISTAV:[460,632]};
+for(const d in bands){const[y0,y1]=bands[d];
+ svg.appendChild(el('rect',{x:18,y:y0,width:944,height:y1-y0,rx:16,fill:DC[d],'fill-opacity':.05,stroke:DC[d],'stroke-opacity':.18}));
+ const t=el('text',{x:34,y:y0+26,class:'dist-label',fill:DC[d]});t.textContent='Region '+d;svg.appendChild(t);
+}
+// river (diagonal band)
+svg.appendChild(el('path',{d:'M0 470 Q 300 430 520 500 T 980 520 L980 560 Q 700 540 500 555 T 0 520 Z',fill:'#13315a','fill-opacity':.5}));
+// streets grid
+for(let x=60;x<980;x+=70)svg.appendChild(el('line',{x1:x,y1:20,x2:x,y2:640,class:'street'+(x%140<70?' main':'')}));
+for(let y=60;y<640;y+=64)svg.appendChild(el('line',{x1:20,y1:y,x2:960,y2:y,class:'street'+(y%128<64?' main':'')}));
+// buildings (avoid nodes)
+function near(x,y){return G.nodes.some(n=>Math.abs(n.x-x)<34&&Math.abs(n.y-y)<30)}
+for(const d in bands){const[y0,y1]=bands[d];let c=0,tries=0;
+ while(c<46&&tries<400){tries++;const x=30+rnd()*920,y=y0+12+rnd()*(y1-y0-24);
+  if(near(x,y)||(y>460&&y<555))continue;const w=8+rnd()*16,h=8+rnd()*14;
+  svg.appendChild(el('rect',{x:x,y:y,width:w,height:h,rx:1.5,class:'bldg'}));
+  if(rnd()>.5)svg.appendChild(el('rect',{x:x+2,y:y+2,width:2,height:2,class:'win'}));c++;}}
+
+// ---- edges ----
+const edgeEls=[];
+G.lines.forEach(l=>{const a=nById[l.from],b=nById[l.to];
+ const base=el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:'edge',stroke:loadColor(l.loading_pct),
+   'stroke-width':l.kv>100?5:2.6,'stroke-opacity':.9});
+ if(l.loading_pct>=80)base.style.filter='drop-shadow(0 0 4px #ef4d4d)';
+ const flow=el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:'flow',stroke:'#ffffff','stroke-width':l.kv>100?2:1.3,'stroke-opacity':.55});
+ base.addEventListener('mousemove',e=>showTip(e,`<b>${l.id}</b> ${l.from}→${l.to}<div class="row">napětí<b>${l.kv} kV</b></div><div class="row">tok<b>${l.flow_mw} MW</b></div><div class="row">kapacita<b>${l.cap_mw} MW</b></div><div class="row">zatížení<b style="color:${loadColor(l.loading_pct)}">${l.loading_pct} %</b></div>${l.tie?'<div class="row" style="color:#e8a33d">mezirег. koridor</div>':''}`));
+ base.addEventListener('mouseleave',hideTip);
+ svg.appendChild(base);svg.appendChild(flow);edgeEls.push(base);
+});
+
+// ---- node icons ----
+function icon(n){const g=el('g',{});const t=n.type;const c={import:'#b07cf0',substation:'#39a7ff',chp:'#f0883e',
+  solar:'#f2c14e',wind:'#2fbf85',storage:'#46c89a',load:'#7aa2d6',prosumer:'#9bd17a',critical:'#ff7b7b'}[t];
+ const producer=['import','chp','solar','wind','storage','prosumer'].includes(t);
+ // district ring
+ g.appendChild(el('circle',{cx:0,cy:0,r:17,fill:'none',stroke:DC[n.district],'stroke-width':2,'stroke-opacity':.8}));
+ if(producer)g.setAttribute('class','prodGlow');
+ if(t=='import'){const r=12;let p=[];for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;p.push((r*Math.cos(a))+','+(r*Math.sin(a)))}
+   g.appendChild(el('polygon',{points:p.join(' '),fill:c,stroke:'#0a1120','stroke-width':1.5}));
+   const tx=el('text',{x:0,y:3.5,'font-size':11,fill:'#0a1120','font-weight':800});tx.textContent='⇄';g.appendChild(tx);}
+ else if(t=='substation'){g.appendChild(el('rect',{x:-11,y:-11,width:22,height:22,rx:4,fill:c,stroke:'#0a1120','stroke-width':1.5}));
+   g.appendChild(el('circle',{cx:-3,cy:0,r:5,fill:'none',stroke:'#0a1120','stroke-width':1.6}));
+   g.appendChild(el('circle',{cx:3,cy:0,r:5,fill:'none',stroke:'#0a1120','stroke-width':1.6}));}
+ else if(t=='chp'){g.appendChild(el('circle',{cx:0,cy:1,r:12,fill:c,stroke:'#0a1120','stroke-width':1.5}));
+   g.appendChild(el('rect',{x:-6,y:-12,width:4,height:8,fill:c,stroke:'#0a1120','stroke-width':1}));
+   g.appendChild(el('rect',{x:2,y:-12,width:4,height:8,fill:c,stroke:'#0a1120','stroke-width':1}));}
+ else if(t=='solar'){g.appendChild(el('rect',{x:-10,y:-10,width:20,height:20,rx:2,transform:'rotate(45)',fill:c,stroke:'#0a1120','stroke-width':1.5}));
+   g.appendChild(el('circle',{cx:0,cy:0,r:4,fill:'#fff7d6'}));}
+ else if(t=='wind'){g.appendChild(el('circle',{cx:0,cy:0,r:11,fill:c,stroke:'#0a1120','stroke-width':1.5}));
+   for(let i=0;i<3;i++)g.appendChild(el('line',{x1:0,y1:0,x2:8*Math.cos(i*2.1),y2:8*Math.sin(i*2.1),stroke:'#0a1120','stroke-width':1.8}));}
+ else if(t=='storage'){g.appendChild(el('rect',{x:-12,y:-9,width:24,height:18,rx:3,fill:c,stroke:'#0a1120','stroke-width':1.5}));
+   g.appendChild(el('rect',{x:12,y:-4,width:3,height:8,fill:c}));
+   const tx=el('text',{x:0,y:3.2,'font-size':9,fill:'#0a1120','font-weight':800});tx.textContent=(n.soc_pct||'')+'%';g.appendChild(tx);}
+ else{ // house / load / prosumer / critical
+   g.appendChild(el('path',{d:'M -11 6 L -11 -2 L 0 -12 L 11 -2 L 11 6 Z',fill:c,stroke:'#0a1120','stroke-width':1.5}));
+   if(t=='prosumer'){g.appendChild(el('circle',{cx:0,cy:-3,r:3,fill:'#ffd84d',stroke:'#0a1120','stroke-width':.8}));}
+   if(t=='critical'){const tx=el('text',{x:0,y:4,'font-size':11,fill:'#3a1414','font-weight':900});tx.textContent='+';g.appendChild(tx);}
+ }
+ // inject/draw badge
+ const badge=el('g',{transform:'translate(13,-13)'});
+ badge.appendChild(el('circle',{r:6,fill:producer?'#1c3a26':'#15263c',stroke:producer?'#2fbf85':'#7aa2d6','stroke-width':1.3}));
+ const ar=el('text',{x:0,y:3.2,'font-size':9,'text-anchor':'middle',fill:producer?'#5fe0a0':'#9fc4ee','font-weight':900});
+ ar.textContent=producer?'▲':'▼';badge.appendChild(ar);g.appendChild(badge);
+ return g;
+}
+G.nodes.forEach(n=>{const g=el('g',{class:'node',transform:`translate(${n.x},${n.y})`});
+ g.appendChild(icon(n));
+ const lab=el('text',{y:30});lab.textContent=n.name;g.appendChild(lab);
+ // alert ring if element in active alerts
+ const alerted=AL.alerts.some(a=>a.element&&(a.element.includes(n.id)||a.element.includes(n.name.split(' ')[0])));
+ if(alerted){const ring=el('circle',{r:21,fill:'none',stroke:'#ef4d4d','stroke-width':2});ring.style.animation='dash 2s';g.appendChild(ring);
+   g.appendChild(el('circle',{r:21,fill:'none',stroke:'#ef4d4d','stroke-width':1.5,'stroke-opacity':.6}));}
+ g.addEventListener('click',()=>inspect(n));
+ g.addEventListener('mouseenter',()=>inspect(n));
+ svg.appendChild(g);
+});
+
+// ---- inspector ----
+const insp=document.getElementById('inspector');
+function inspect(n){
+ const net=(n.p_gen||0)-(n.p_load||0);
+ let trafo='';
+ if(n.transformers){trafo='<div style="margin-top:6px;font-size:10px;color:#8593ad;text-transform:uppercase;letter-spacing:.5px">Transformátory</div>';
+  n.transformers.forEach(t=>{const col=t.loading_pct>=90?'#ef4d4d':t.loading_pct>=75?'#f0883e':'#2fbf85';
+   trafo+=`<div class="metric"><span>${t.name} ${t.in_service?'':'<span style="color:#8593ad">(údržba)</span>'}</span><b style="color:${col}">${t.loading_pct}% / ${t.cap_mva} MVA</b></div>`;});}
+ const vbad=n.v_pu<G.meta.limits.v_pu_min||n.v_pu>G.meta.limits.v_pu_max;
+ const inflow=G.lines.filter(l=>l.to===n.id||l.from===n.id);
+ const flowtxt=inflow.map(l=>`${l.id}: ${l.flow_mw} MW (${l.loading_pct}%)`).join(' · ')||'—';
+ insp.innerHTML=`<h4>${n.name}</h4><div class="sub">${n.role} · region ${n.district} · ${n.kv} kV</div>
+  <div class="metric"><span>Spotřeba</span><b>${n.p_load||0} MW</b></div>
+  <div class="metric"><span>Výroba</span><b>${n.p_gen||0} MW</b></div>
+  <div class="metric"><span>Saldo uzlu</span><b style="color:${net>=0?'#2fbf85':'#7aa2d6'}">${net>=0?'+':''}${net} MW</b></div>
+  ${n.p_cap?`<div class="metric"><span>Instal. kapacita</span><b>${n.p_cap} MW</b></div>`:''}
+  <div class="metric"><span>Napětí</span><b style="color:${vbad?'#ef4d4d':'#fff'}">${n.v_pu} p.u. (lim ${G.meta.limits.v_pu_min}–${G.meta.limits.v_pu_max})</b></div>
+  ${trafo}
+  <div style="margin-top:6px;font-size:10px;color:#8593ad">Toky vedení</div><div style="font-size:10.5px;color:#b9c6db">${flowtxt}</div>`;
+ insp.style.display='block';
+}
+document.getElementById('stage').addEventListener('mouseleave',()=>insp.style.display='none');
+
+function showTip(e,h){tip.innerHTML=h;tip.style.opacity=1;const s=document.getElementById('stage').getBoundingClientRect();
+ let x=e.clientX-s.left+13,y=e.clientY-s.top+13;if(x>s.width-220)x-=233;if(y>s.height-120)y-=120;tip.style.left=x+'px';tip.style.top=y+'px';}
+function hideTip(){tip.style.opacity=0}
+
+// ---- KPIs ----
+const s=G.summary;
+document.getElementById('kpis').innerHTML=`
+ <div class="kpi"><div class="lab">Spotřeba</div><div class="val">${s.total_load_mw} MW</div></div>
+ <div class="kpi"><div class="lab">Výroba lok.</div><div class="val">${s.total_gen_local_mw} MW</div></div>
+ <div class="kpi"><div class="lab">Import</div><div class="val">${s.import_mw} MW</div></div>
+ <div class="kpi warn"><div class="lab">Max prvek</div><div class="val">${s.binding_constraint.loading_pct} %</div></div>
+ <div class="kpi ${s.n1_secure?'good':'bad'}"><div class="lab">N-1</div><div class="val">${s.n1_secure?'OK':'RIZIKO'}</div></div>
+ <div class="kpi bad"><div class="lab">Alerty</div><div class="val">${AL.alerts.length}</div></div>`;
+
+// ---- legend ----
+document.getElementById('legend').innerHTML=`
+ <div style="font-weight:700;margin-bottom:4px">Legenda</div>
+ <div class="r"><svg width="20" height="16"><circle cx="10" cy="8" r="6" fill="none" stroke="#ffcf4d" stroke-width="2"/><text x="14" y="5" font-size="8" fill="#5fe0a0">▲</text></svg> výrobna / prosumer (dodává)</div>
+ <div class="r"><svg width="20" height="16"><path d="M2 12 L2 6 L10 1 L18 6 L18 12 Z" fill="#7aa2d6"/></svg> odběrné místo (jen spotřeba)</div>
+ <div class="r"><svg width="20" height="16"><path d="M2 12 L2 6 L10 1 L18 6 L18 12 Z" fill="#ff7b7b"/><text x="7" y="11" font-size="9" fill="#3a1414" font-weight="900">+</text></svg> kritický odběr</div>
+ <div class="r"><svg width="20" height="16"><rect x="1" y="2" width="18" height="12" rx="3" fill="#39a7ff"/></svg> rozvodna (transformovna)</div>
+ <div class="r"><svg width="20" height="16"><polygon points="10,2 17,6 17,12 10,15 3,12 3,6" fill="#b07cf0"/></svg> import / hraniční uzel</div>
+ <div class="r"><svg width="34" height="8"><line x1="2" y1="4" x2="32" y2="4" stroke="#2fbf85" stroke-width="4"/></svg> vedení nízké zatížení</div>
+ <div class="r"><svg width="34" height="8"><line x1="2" y1="4" x2="32" y2="4" stroke="#ef4d4d" stroke-width="4"/></svg> vedení blízko limitu</div>`;
+
+// ---- workflow strip ----
+const steps=[['1','Alerty přijdou','act'],['2','JSON stažen',''],['3','Auto-analýza',''],['4','Doporučení','']];
+function renderFlow(active){document.getElementById('flowstrip').innerHTML=steps.map((st,i)=>
+  `<div class="fstep ${i<=active?'act':''}"><span class="n">${st[0]}</span><b>${st[1]}</b></div>`+
+  (i<3?'<span style="color:#475569;font-size:13px">→</span>':'')).join('');}
+renderFlow(3);
+
+// ---- sidebar ----
+const re=AL.recommendation_engine;
+function fmt(n){return n.toLocaleString('cs-CZ')}
+const ai=`<div class="card ai"><h3>🧠 AI Powered Summary <button class="run" onclick="replay()">↻ analýza</button></h3>
+ <p><b>Stav:</b> Voltava City kryje špičku 225 MW; lokální zdroje dávají 117 MW, zbytek (108 MW) se dováží. <b>Úzké hrdlo je transformátor T2 v Rozvodně Centrum (91 %)</b> — T1 je v údržbě, takže síť právě <b style="color:#ef4d4d">není N-1 bezpečná</b>.</p>
+ <p><b>Hlavní riziko:</b> studená fronta za ~2 h zvedne spotřebu o 8 % a zároveň klesne vítr → import koridor Sever↔Centrum (L02) by přesáhl 100 %.</p>
+ <p><b>Doporučení (1 klik):</b> ${re.headline}. Region <b style="color:#e8a33d">Přístav</b> má přebytek a může pomoci regionu <b style="color:#46c89a">Centrum</b> přes jižní koridor L09 (volný, 28 %).</p>
+ <p><span class="tag">4 alerty</span><span class="tag">N-1: riziko</span><span class="tag">úspora ~${fmt(re.net_saving_czk_day)} Kč/den</span></p>
+ <div class="illu">Shrnutí vygenerováno automaticky z grid_state.json + alerts.json. Data ilustrativní.</div></div>`;
+
+const alertsHtml=`<div class="card"><h3>🚨 Alerty (${AL.alerts.length})</h3>`+
+ AL.alerts.map(a=>`<div class="alert ${a.severity}" onclick="openAlert('${a.id}')">
+   <div style="display:flex;justify-content:space-between;align-items:center"><span class="sev ${a.severity}">${a.severity}</span><span class="el">${a.element}</span></div>
+   <div class="ti">${a.title}</div>
+   <div class="el">▸ klikni pro detail (co/proč/akce/alternativa/dopad + Kč)</div></div>`).join('')+'</div>';
+
+const recHtml=`<div class="card"><h3>🛠️ Doporučení pro provoz</h3>`+
+ re.actions_ranked.map(r=>`<div class="rec"><div><div>${r.action}</div><div class="eff">${r.effect} · ${r.type}</div></div><div class="cz">${r.cost_czk?fmt(r.cost_czk)+' Kč':'0 Kč'}</div></div>`).join('')+
+ `<div class="save">Souhrn: zásah <b style="font-size:12px;color:#fff">${fmt(re.total_intervention_czk)} Kč</b> → vyhnutá ztráta <b style="font-size:12px;color:#fff">${fmt(re.total_avoided_czk)} Kč</b><br>Čistá úspora <b>${fmt(re.net_saving_czk_day)} Kč/den</b></div>
+ <div class="illu">Finanční hodnoty jsou ilustrativní (demo).</div></div>`;
+
+const predHtml=`<div class="card"><h3>🌦️ Predictive data integration <span style="color:#6f7c93;font-weight:400;text-transform:none;letter-spacing:0">(fiktivní)</span></h3>
+ <div class="pred">
+  <div class="pwid"><div class="ic">🌡️</div><div class="l">Počasí 2h</div><div class="v">${PR.weather.forecast_2h}</div><div class="l">${PR.weather.load_effect_pct}</div></div>
+  <div class="pwid"><div class="ic">🛰️</div><div class="l">Oblačnost</div><div class="v">${PR.satellite.forecast_tomorrow_noon}</div><div class="l">${PR.satellite.solar_effect}</div></div>
+  <div class="pwid"><div class="ic">🌬️</div><div class="l">Vítr 2h</div><div class="v">${PR.wind.forecast_2h}</div><div class="l">z ${PR.wind.now}</div></div>
+ </div>
+ <div style="font-size:10px;color:#8593ad;text-transform:uppercase;letter-spacing:.5px;margin:6px 0 3px">Propojení signálů s chováním sítě</div>
+ ${PR.external_signals.map(s=>`<div class="sig">⚡ <b>${s.signal}</b> — ${s.rule} <span style="color:#7fc0ff">→ ${s.applies_to}</span></div>`).join('')}
+ <div class="illu">Externí signály jsou fiktivní; demonstrují, jak by se predikce propsala do alertů a doporučení.</div></div>`;
+
+document.getElementById('side').innerHTML=ai+alertsHtml+recHtml+predHtml;
+
+// ---- alert modal ----
+function openAlert(id){const a=AL.alerts.find(x=>x.id===id);const f=a.financial;
+ const pb=a.predictive_basis?`<div class="f5" style="border-left-color:#b07cf0"><div class="k" style="color:#b07cf0">Prediktivní základ</div><p>${Object.entries(a.predictive_basis).map(([k,v])=>k+': '+v).join(' · ')}</p></div>`:'';
+ document.getElementById('modalbox').innerHTML=`<button class="closeb" onclick="closeM()">✕ zavřít</button>
+  <span class="sev ${a.severity}">${a.severity}</span> <span class="el" style="color:#8593ad">${a.element}</span>
+  <h2>${a.title}</h2>
+  <div class="f5"><div class="k">1 · Co se stalo / co se blíží</div><p>${a.what}</p></div>
+  <div class="f5"><div class="k">2 · Proč alert vznikl (signál / pravidlo / limit)</div><p>${a.why}</p></div>
+  <div class="f5"><div class="k">3 · Co se má udělat</div><p>${a.action}</p></div>
+  <div class="f5"><div class="k">4 · Co udělat jinak oproti současnému stavu</div><p>${a.alternative}</p></div>
+  <div class="f5" style="border-left-color:#ef4d4d"><div class="k" style="color:#ef4d4d">5 · Očekávaný dopad a riziko, pokud nic neuděláme</div><p>${a.impact_risk}</p></div>
+  ${pb}
+  <div class="fin">
+   <div><div class="l">Náklad zásahu</div><div class="v" style="color:#f0883e">${fmt(f.intervention_cost_czk)} Kč</div></div>
+   <div><div class="l">Vyhnutá ztráta</div><div class="v" style="color:#2fbf85">${fmt(f.avoided_penalty_czk)} Kč</div></div>
+   <div><div class="l">Čistá úspora</div><div class="v" style="color:#2fbf85">${fmt(f.net_saving_czk)} Kč</div></div>
+  </div><div class="illu">${f.note} · Hodnoty ilustrativní.</div>`;
+ document.getElementById('modal').style.display='flex';}
+function closeM(){document.getElementById('modal').style.display='none'}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id=='modal')closeM()});
+function replay(){let i=0;renderFlow(0);const t=setInterval(()=>{i++;renderFlow(i);if(i>=3)clearInterval(t)},420)}
+</script></body></html>
