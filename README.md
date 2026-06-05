@@ -1,50 +1,52 @@
-# Hackathon — EPS (Grid Pulse Challenge 2026)
+# Grid Pulse — Hackathon EPS 2026
 
-A hackathon project built on the ČEPS / IEEE-118 power grid dataset for the **Grid Pulse Challenge 2026**.
+An AI-powered power grid monitoring and dispatch assistant built for the **Grid Pulse Challenge 2026** (ČEPS / IEEE-118 dataset).
 
-## Goal
+The core idea: **the LLM does not compute physics — it picks the right tool and explains the result. Numbers come from pandapower.**
 
-Build an application with a chatbot on top of hourly power grid data that lets users discover:
-- the current state of the grid
-- overloads and branch loading
-- inter-regional flows
-- N-1 contingency impacts
-- forecast-based outlook (day-ahead loads, renewable generation, planned outages)
+## Architecture (MVP stack)
+
+| Layer | Tool | Purpose |
+|-------|------|---------|
+| Physics | **pandapower** | Load flow, N-1 contingency analysis |
+| History | **DuckDB over Parquet** | Fast queries across a full year of snapshots |
+| Analogy | **FAISS** (feature vectors) | "Last time a similar hour occurred → this happened" |
+| Brain | **LLM via API** (Claude/GPT) + tool-calling | Dispatcher query → tool → explanation |
+| UI | **HTML map** + alerts | Visual for the jury |
+
+Backend = single **FastAPI** file. No model training. Domain glossary injected as JSON into the prompt.
 
 ## Repository contents
 
-| Path | Description |
-|------|-------------|
-| `greenhack-2026-ČEPS-dataset/` | The full dataset provided by ČEPS for the hackathon |
+| File / folder | Description |
+|---------------|-------------|
 | `Grid Pulse Challenge(1).pdf` | Official challenge brief |
+| `Grid_Pulse_MVP_plan.md` | MVP plan — maximum value, minimum time |
+| `Grid_Pulse_koncept.md` | Full application concept (physics explanation, demo scenario) |
+| `grid_pulse_city_demo.html` | Interactive dispatch mockup (city map + alerts + AI summary) |
+| `grid_pulse_map.html` | Grid map view |
+| `grid_state.json` | Example network state snapshot |
+| `alerts.json` | Example alerts with AI recommendations |
+| `.gitignore` | Excludes the local ČEPS dataset folder (too large for GitHub) |
 
-## Dataset overview
+> The `greenhack-2026-ČEPS-dataset/` folder is intentionally excluded from this repository (8 760 hourly pandapower JSON snapshots).
 
-Hourly data from the IEEE-118 bus system for a full year (8 760 snapshots).  
-Each snapshot is a solved load flow in [pandapower](https://www.pandapower.org/).
+## Demo scenario (for the jury)
 
-Sub-folders inside the dataset:
+Winter peak → alert "transformer at 91 %, N-1 risk" → dispatcher triggers analysis → agent uses pandapower to compute N-1 + finds analogous historical hours via FAISS → AI recommends a specific redispatch action backed by data and priced in CZK → end-of-shift summary for the next dispatcher.
 
-- `static/` — fixed network description (buses, lines, transformers, generators, regions, coordinates)
-- `snapshots/` — pandapower JSON files, one per hour (`YYYY_MM_DD_HH_MM_SS.json`)
-- `realtime/` — flat CSV time series (hourly load and generation)
-- `forecasts/` — day-ahead forecasts: load per region, renewable generation, planned outages
-- `other/` — fuel prices by type and region (monthly resolution)
-
-See `greenhack-2026-ČEPS-dataset/greenhack-2026-ČEPS-dataset/convention.md` for full column descriptions.
-
-## Quick start
+## Getting started (once backend is wired)
 
 ```python
 import pandapower as pp
 
-net = pp.from_json("greenhack-2026-ČEPS-dataset/greenhack-2026-ČEPS-dataset/snapshots/2024_07_01_18_00_00.json")
+net = pp.from_json("path/to/snapshots/2024_07_01_18_00_00.json")
 net.res_line.loading_percent   # branch loading (already computed)
 net.res_bus.vm_pu              # bus voltages
 pp.runpp(net)                  # recompute after modifying the network
 ```
 
-## Licence
+## Dataset licence
 
-The dataset is derived from [evgenytsydenov/ieee118_power_flow_data](https://github.com/evgenytsydenov/ieee118_power_flow_data)
-and is licensed under **[CC-BY-NC-SA 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0/)** — non-commercial use, derivative works under the same licence.
+The ČEPS dataset is derived from [evgenytsydenov/ieee118_power_flow_data](https://github.com/evgenytsydenov/ieee118_power_flow_data)
+and licensed under **[CC-BY-NC-SA 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0/)** — non-commercial use, derivative works under the same licence.
