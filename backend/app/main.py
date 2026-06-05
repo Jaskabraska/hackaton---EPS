@@ -11,7 +11,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import config
 from .analysis import alerts
 from .grid import contingency, state
-from .schemas import ContingencyResult, GridState
+from .llm import orchestrator
+from .schemas import (
+    ChatRequest,
+    ChatResponse,
+    ContingencyResult,
+    GridState,
+    ProposedAction,
+    RiskVerdict,
+    ShiftSummary,
+)
 
 app = FastAPI(title="Grid Pulse API", version="0.1.0")
 
@@ -56,3 +65,26 @@ def get_alerts(datetime: str = "2024_01_01_18_00_00", horizon_h: int = 2) -> dic
         return alerts.generate_alerts(datetime, horizon_h=horizon_h, write=True)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/chat", response_model=ChatResponse)
+def post_chat(req: ChatRequest) -> ChatResponse:
+    return orchestrator.run_chat(req.message, datetime=req.datetime, history=req.history)
+
+
+@app.post("/apply")
+def post_apply(action: ProposedAction) -> dict:
+    return orchestrator.apply_action(action)
+
+
+@app.get("/assess", response_model=RiskVerdict)
+def get_assess(element: str, datetime: str = "2024_01_01_18_00_00") -> RiskVerdict:
+    try:
+        return orchestrator.assess_risk(datetime, element)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/summary", response_model=ShiftSummary)
+def get_summary(datetime: str = "2024_01_01_18_00_00", window_h: int = 12) -> ShiftSummary:
+    return orchestrator.shift_summary(datetime, window_h=window_h)
