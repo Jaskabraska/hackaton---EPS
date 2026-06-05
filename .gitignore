@@ -22,3 +22,4 @@ frontend/.npm-cache/
 frontend/.next/
 frontend/out/
 *.log
+.logs/
