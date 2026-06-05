@@ -52,11 +52,20 @@ class RealProvider:
             ToolCall(id=tc.id, name=tc.function.name, arguments=json.loads(tc.function.arguments or "{}"))
             for tc in (message.tool_calls or [])
         ]
-        return LLMResponse(
-            content=message.content,
-            tool_calls=tool_calls,
-            raw_assistant_message=message.model_dump(),
-        )
+        # Build a clean assistant message - sending the full model_dump() back
+        # includes null sub-fields (function_call, audio, ...) that some
+        # OpenAI-compatible endpoints (Gemini) reject with "not a struct: null".
+        clean: dict[str, Any] = {"role": "assistant", "content": message.content or ""}
+        if tool_calls:
+            clean["tool_calls"] = [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {"name": tc.name, "arguments": json.dumps(tc.arguments)},
+                }
+                for tc in tool_calls
+            ]
+        return LLMResponse(content=message.content, tool_calls=tool_calls, raw_assistant_message=clean)
 
 
 class MockProvider:

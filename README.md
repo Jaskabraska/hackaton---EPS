@@ -66,11 +66,11 @@ Configured purely through env vars in `backend/.env`:
 
 ```
 LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-LLM_MODEL=gemini-3-flash
+LLM_MODEL=gemini-2.5-flash
 LLM_API_KEY=<shared key, never committed>
 ```
 
-- Default `gemini-3-flash` (good free limits, supports function calling). Verify the exact model id in Google AI Studio.
+- Default `gemini-2.5-flash` (stable, supports function calling). Other valid ids: `gemini-3-flash-preview`, `gemini-3.5-flash`, `gemini-flash-latest`. List your account's models at `GET {LLM_BASE_URL}models`.
 - For final demo runs only you may set `LLM_MODEL=gemini-2.5-pro` (strict **50 requests/day** free limit).
 - Drop-in fallbacks (same OpenAI-compatible interface, only env vars change):
   - Groq: `LLM_BASE_URL=https://api.groq.com/openai/v1`, `LLM_MODEL=llama-3.3-70b-versatile`
