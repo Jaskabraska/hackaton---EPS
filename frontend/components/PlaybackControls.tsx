@@ -9,11 +9,12 @@ type Props = {
   onHourChange: (bundle: DayBundle, hourIndex: number) => void
   onPause: (bundle: DayBundle, hourIndex: number) => void
   onComplete: (bundle: DayBundle) => void
+  onLiveMode: () => void
   isPaused: boolean
   setIsPaused: (v: boolean) => void
 }
 
-export default function PlaybackControls({ onHourChange, onPause, onComplete, isPaused, setIsPaused }: Props) {
+export default function PlaybackControls({ onHourChange, onPause, onComplete, onLiveMode, isPaused, setIsPaused }: Props) {
   const [bundle, setBundle] = useState<DayBundle | null>(null)
   const [hour, setHour] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -106,9 +107,9 @@ export default function PlaybackControls({ onHourChange, onPause, onComplete, is
           disabled={loading}
           className="px-4 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-sm font-medium text-white disabled:opacity-50"
         >
-          {loading ? "Loading..." : "Apply"}
+          {loading ? "Loading day…" : "Load day playback"}
         </button>
-        {error && <span className="text-xs text-red-400">{error}</span>}
+        {error && <span className="max-w-xs text-xs text-red-400">{error}</span>}
       </div>
     )
   }
@@ -120,6 +121,13 @@ export default function PlaybackControls({ onHourChange, onPause, onComplete, is
 
   return (
     <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={onLiveMode}
+        className="px-3 py-1.5 rounded border border-slate-600 bg-slate-800 text-sm text-slate-300 hover:bg-slate-700"
+      >
+        Live view
+      </button>
       <button
         onClick={isPlaying && !isPaused ? pause : play}
         className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-sm font-medium text-white"

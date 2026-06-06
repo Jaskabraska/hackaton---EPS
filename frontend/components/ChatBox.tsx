@@ -7,6 +7,13 @@ import type { ChatResponse, ProposedAction } from "@/lib/types"
 
 type Entry = { role: "user" | "assistant"; text: string }
 
+const SUGGESTIONS = [
+  "Is the grid N-1 secure right now?",
+  "Show me the worst branch loading",
+  "Which region has the tightest reserve?",
+  "Draft a shift handover note"
+]
+
 export default function ChatBox({ datetime }: { datetime: string }) {
   const [entries, setEntries] = useState<Entry[]>([])
   const [input, setInput] = useState("")
@@ -17,14 +24,14 @@ export default function ChatBox({ datetime }: { datetime: string }) {
     return error instanceof Error ? error.message : "Assistant request failed."
   }
 
-  async function ask() {
-    const message = input.trim()
-    if (!message || busy) return
-    setEntries((e) => [...e, { role: "user", text: message }])
+  async function send(message: string) {
+    const text = message.trim()
+    if (!text || busy) return
+    setEntries((e) => [...e, { role: "user", text }])
     setInput("")
     setBusy(true)
     try {
-      const res: ChatResponse = await sendChat(message, datetime)
+      const res: ChatResponse = await sendChat(text, datetime)
       setEntries((e) => [...e, { role: "assistant", text: res.reply }])
       setPending(res.status === "awaiting_approval" ? res.proposed_action : null)
     } catch (error) {
@@ -50,46 +57,64 @@ export default function ChatBox({ datetime }: { datetime: string }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="text-sm font-semibold mb-2">Ask the dispatcher assistant</div>
-      <div className="flex-1 overflow-y-auto space-y-2 mb-2 max-h-64">
-        {entries.map((e, i) => (
-          <div
-            key={i}
-            className={`text-sm rounded px-2 py-1 ${
-              e.role === "user" ? "bg-slate-700 text-slate-100" : "bg-grid-panel text-slate-200"
-            }`}
-          >
-            {e.text}
+    <div className="flex h-full flex-col px-3 py-3">
+      <div className="flex-1 space-y-2 overflow-y-auto pr-1 min-h-[140px] max-h-[260px]">
+        {entries.length === 0 ? (
+          <div className="text-xs text-slate-500">
+            Ask about the live grid state, alerts or forecast. Every number comes from a tool call.
           </div>
-        ))}
+        ) : (
+          entries.map((e, i) => (
+            <div
+              key={i}
+              className={`max-w-[88%] rounded-lg px-2.5 py-1.5 text-sm ${
+                e.role === "user"
+                  ? "ml-auto bg-accent-soft/30 text-slate-100"
+                  : "bg-grid-raised text-slate-200"
+              }`}
+            >
+              {e.text}
+            </div>
+          ))
+        )}
       </div>
+
       {pending && (
-        <div className="rounded border border-amber-500 bg-amber-500/10 p-2 mb-2">
-          <div className="text-xs text-amber-300 mb-1">Awaiting approval</div>
-          <div className="text-sm text-slate-100 mb-2">{pending.description}</div>
+        <div className="mt-2 rounded-lg border border-status-warn/50 bg-status-warn/10 p-2">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-status-warn">Awaiting approval</div>
+          <div className="mt-1 mb-2 text-sm text-slate-100">{pending.description}</div>
           <button
             onClick={approve}
-            className="text-xs rounded bg-amber-600 hover:bg-amber-500 px-2 py-1 text-white"
+            disabled={busy}
+            className="rounded-md bg-status-warn/80 px-2.5 py-1 text-[11px] font-medium text-grid-bg hover:bg-status-warn disabled:opacity-50"
           >
             Approve and run analysis
           </button>
         </div>
       )}
-      <div className="flex gap-2">
+
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {SUGGESTIONS.map((s) => (
+          <button key={s} onClick={() => send(s)} disabled={busy} className="chip disabled:opacity-50">
+            {s}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-2 flex gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && ask()}
-          placeholder="e.g. is the grid N-1 secure right now?"
-          className="flex-1 rounded bg-grid-bg border border-grid-edge px-2 py-1 text-sm"
+          onKeyDown={(e) => e.key === "Enter" && send(input)}
+          placeholder="Ask about a bus, line, alert or forecast…"
+          className="flex-1 rounded-lg border border-grid-line bg-grid-bg px-2.5 py-1.5 text-sm placeholder:text-slate-600 focus:border-accent/60 focus:outline-none"
         />
         <button
-          onClick={ask}
+          onClick={() => send(input)}
           disabled={busy}
-          className="text-sm rounded bg-blue-600 hover:bg-blue-500 px-3 py-1 text-white disabled:opacity-50"
+          className="rounded-lg bg-accent-soft px-3.5 py-1.5 text-sm font-medium text-white hover:bg-accent-soft/80 disabled:opacity-50"
         >
-          Send
+          {busy ? "…" : "Send"}
         </button>
       </div>
     </div>

@@ -10,7 +10,9 @@ import type {
   ShiftSummary
 } from "./types"
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
+// Default to same-origin /api proxy (see next.config.mjs) so the browser never
+// blocks requests when the backend is on a different host/port.
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api"
 
 async function errorMessage(res: Response): Promise<string> {
   try {
