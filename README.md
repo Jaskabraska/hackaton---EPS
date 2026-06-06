@@ -11,7 +11,7 @@ The core idea: **the LLM does not compute physics — it picks the right tool an
 | Physics | **pandapower** | Solved load flow + N-1 contingency on the real IEEE-118 snapshots |
 | Data | **files, read on demand** | Dataset CSV/JSON + the snapshot JSONs; results cached in memory (no database) |
 | Brain | **Groq via the OpenAI-compatible API** + tool calling | Dispatcher query → tool → explanation; mock provider when no key |
-| UI | **Next.js + TypeScript + Tailwind** | Dispatcher dashboard: real-coordinate map, KPIs, alerts, chat |
+| UI | **Next.js + TypeScript + Tailwind** | Dispatcher dashboard: Cameroon map overlay, generation icons, KPIs, alerts, chat |
 
 The backend is **FastAPI + Python**. The domain glossary (`backend/app/llm/glossary.json`) is injected into the LLM system prompt so it reads column names, units and TSO jargon correctly. Computed results are also written as JSON into `output/`.
 
@@ -29,6 +29,8 @@ backend/                 FastAPI + pandapower
   tests/                 pytest, tests-first (incl. mock-provider loop, no key needed)
   .env.example           LLM_BASE_URL / LLM_MODEL / LLM_API_KEY template
 frontend/                Next.js dashboard (GridMap, KpiTiles, AlertsPanel, NodeInspector, AiSummary, ChatBox)
+  public/                Cameroon map background + per-type/combination generation SVG icons
+  lib/generation.ts      bus → generation-type metadata and icon paths for the map
 output/                  generated JSON results (gitignored)
 ```
 
@@ -56,9 +58,11 @@ cd backend
 ```bash
 cd frontend
 npm install
-copy .env.example .env        # NEXT_PUBLIC_API_URL=http://localhost:8000
+copy .env.example .env        # optional; defaults to /api proxy → http://127.0.0.1:8000
 npm run dev
 ```
+
+The map uses a static Cameroon background (`frontend/public/cameroon-map.png`) with the IEEE-118 grid drawn on top. Generator buses show SVG icons by fuel type (solar, wind, hydro, gas, etc.) from `frontend/public/icons/`.
 
 ## LLM provider (Groq, free tier)
 
