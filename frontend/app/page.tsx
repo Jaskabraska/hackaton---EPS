@@ -13,7 +13,7 @@ import KpiTiles from "@/components/KpiTiles"
 import Modal from "@/components/Modal"
 import NodeInspector from "@/components/NodeInspector"
 import PlaybackControls from "@/components/PlaybackControls"
-import { fetchAlerts, fetchMap, fetchState, runPlaybook } from "@/lib/api"
+import { fetchAlerts, fetchMap, fetchState, logDecision, runPlaybook } from "@/lib/api"
 import type {
   Alert,
   AlertsPayload,
@@ -131,8 +131,11 @@ export default function Page() {
     }
   }
 
-  // Dismiss announcement
+  // Disapprove: log the acknowledgement (no action), then resume
   const handleDismiss = () => {
+    if (announcementAlert) {
+      logDecision(announcementAlert.element, datetime, "acknowledged_no_action").catch(() => {})
+    }
     setAnnouncementAlert(null)
     setIsPaused(false)
   }

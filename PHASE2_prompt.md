@@ -1,9 +1,30 @@
-# Phase 2 prompt — Grid Pulse (fix everything possible now, no final design)
+# Phase 2 prompt — Grid Pulse (audit & complete, do NOT recreate)
 
-You are continuing the **Grid Pulse** project in the `hackathon` repo. Implement everything
-below. Do **functional** work and **data-driven visuals**; leave final theme/colours/polish to a
-separate design pass that will come later (a Lovable design will be handed over). First read
-`SPEC_backend_demo.md`, `Grid_Pulse_MVP_plan.md`, and `grid_pulse_city_demo.html` in the repo root.
+You are continuing the **Grid Pulse** project in the `hackathon` repo. **A large part of Phase 2
+is already implemented and committed** — including the 24-hour playback, the big-screen
+alert announcement (Investigate / Acknowledge), auto-pause on alert, the incident-report view with
+the numbered playbook steps, the approve/disapprove flow, the alerts panel, and the AI shift
+summary. **Do NOT rebuild or rewrite working code.**
+
+## Ground rules (read first)
+
+1. **Audit before you touch anything.** Run the app and `pytest`, then for each task below state
+   whether it is already satisfied, partially done, or missing. Only change what is broken or
+   missing.
+2. **Do not recreate** components/endpoints that already exist and work — extend them in place.
+3. The tasks below are a **checklist to verify and complete**, not a from-scratch build.
+4. **Known-broken (highest priority):** Task 8 (N-1 classification — produces bogus "loss of supply
+   to 0 buses" alerts) and Task 7 (shift summary uses wrong windows + generic content). These are
+   the main things to fix.
+5. **Likely already done** (confirm, don't redo): playback + Apply, big-screen announcement +
+   auto-pause + resume, incident report + playbook steps, approve/disapprove. Only fix gaps.
+6. **Most likely still missing/partial:** the map overhaul (Task 2 — source-type icons, regions,
+   background, zoom) and panel width (Task 6). Verify against the current UI before building.
+7. Do **functional** work and **data-driven visuals**; leave final theme/colours/polish to the
+   later Lovable design pass.
+
+First read `SPEC_backend_demo.md`, `Grid_Pulse_MVP_plan.md`, and `grid_pulse_city_demo.html` in
+the repo root, and inspect the existing `backend/app/**` and `frontend/**` to see what is built.
 
 ## Full context — what this is
 
@@ -181,6 +202,20 @@ present), never by non-convergence. With this fix the 2024-02-17 19:00 alert is
 `branch_025_027_1` at ~82.5% (HIGH), not `branch_002_012_1`. Dedupe persistent contingencies so
 the same one is not re-raised every hour as if new.
 
+### 9. Alert frequency — avoid fatigue (the demo should be mostly calm)
+An alert firing almost every hour is wrong: this grid is calm (loadings <=~62%, voltage in band),
+so most hours should have **no alert**. The day should read as quiet with the **19:00 N-1 event as
+the one stand-out moment**.
+- After the Task 8 N-1 fix, HIGH/CRITICAL alerts should be rare (essentially just the 19:00 one on
+  the demo day).
+- **Tune the forecast "watch" (MEDIUM) alert so it does not repeat every hour:** dedupe it so a
+  rising-load episode raises **one** alert when it first crosses the threshold, not a new alert each
+  hour while load keeps rising. Optionally raise `FORECAST_WATCH_RATIO` and/or require a meaningful
+  projected level. Severity stays MEDIUM (never a big-screen takeover).
+- Result for 2024-02-17: most hours show no alert; at most a small number of MEDIUM forecast notes
+  (e.g. one for the morning ramp, one for the evening ramp); the 19:00 N-1 HIGH alert is the
+  headline.
+
 ## Acceptance criteria
 
 - "Apply" starts the 2024-02-17 24-hour playback; stepping/playing updates map + alerts + KPIs;
@@ -206,6 +241,9 @@ the same one is not re-raised every hour as if new.
 - The shift handover summary uses 06:00–18:00 / 18:00–06:00 windows; for 2024-02-17 the night-shift
   summary includes the 19:00 N-1 incident, the approval decision and the recommended action, and
   does not say "no incidents".
+- Alerts are NOT raised almost every hour: most hours of 2024-02-17 have no alert; the forecast
+  "watch" alert is deduped (one per rising episode, not hourly); the 19:00 N-1 HIGH alert stands
+  out as the headline.
 - The alert detail / incident-report view is wide enough to read comfortably (not the cramped
   current panel).
 - Backend `pytest` still passes; the mock provider still works with no API key.

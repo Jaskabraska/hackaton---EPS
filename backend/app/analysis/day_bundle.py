@@ -69,10 +69,12 @@ def _worst_n1_for_hour(stem: str) -> dict:
     for i in net.trafo.index:
         branch_names.append(str(net.trafo.at[i, "name"]))
 
-    # Track separately: worst converged overload and worst divergence
+    # Track separately by N-1 outcome: worst converged loading, worst islanding (real
+    # loss of supply), and any non-convergence (numerical instability, NOT an outage).
     worst_converged: dict | None = None
     worst_converged_loading = 0.0
-    worst_diverged: dict | None = None
+    worst_islanding: dict | None = None
+    worst_nonconverge: dict | None = None
 
     for branch in branch_names:
         try:
@@ -89,6 +91,7 @@ def _worst_n1_for_hour(stem: str) -> dict:
 
         entry = {
             "tripped_element": branch,
+            "status": result.status,
             "converged": result.converged,
             "n1_secure": result.n1_secure,
             "worst_loading_percent": result.worst_loading_percent,
@@ -98,19 +101,24 @@ def _worst_n1_for_hour(stem: str) -> dict:
             "new_overloads": [ol.model_dump() for ol in result.new_overloads],
         }
 
-        if result.converged:
-            if result.worst_loading_percent > worst_converged_loading:
-                worst_converged_loading = result.worst_loading_percent
-                worst_converged = entry
-        elif worst_diverged is None:
-            worst_diverged = entry
+        if result.status == "islanding":
+            if worst_islanding is None or result.isolated_bus_count > worst_islanding["isolated_bus_count"]:
+                worst_islanding = entry
+        elif result.status == "nonconvergence":
+            if worst_nonconverge is None:
+                worst_nonconverge = entry
+        elif result.worst_loading_percent > worst_converged_loading:
+            # secure or overload: both converge; track the highest post-trip loading.
+            worst_converged_loading = result.worst_loading_percent
+            worst_converged = entry
 
-    # Pick the primary worst: prefer the converged overload for reporting
-    # (divergence is reported separately as a CRITICAL alert)
-    worst = worst_converged or worst_diverged
+    # Pick the primary worst for reporting: prefer the converged overload, then islanding.
+    # Non-convergence is recorded as a study note, never the headline N-1 result.
+    worst = worst_converged or worst_islanding or worst_nonconverge
     if worst is None:
         worst = {
             "tripped_element": None,
+            "status": "secure",
             "converged": True,
             "n1_secure": True,
             "worst_loading_percent": 0.0,
@@ -119,6 +127,14 @@ def _worst_n1_for_hour(stem: str) -> dict:
             "affected_loading_percent": None,
             "new_overloads": [],
         }
+
+    # Flag non-convergence for study without raising an alert (possible instability, not an outage).
+    worst["nonconvergence_note"] = (
+        f"Tripping {worst_nonconverge['tripped_element']} did not converge after DC/Gauss-Seidel "
+        "retries — possible instability, flagged for study."
+        if worst_nonconverge
+        else None
+    )
 
     # Generate N-1 alerts
     n1_alerts: list[dict] = []
@@ -150,10 +166,11 @@ def _worst_n1_for_hour(stem: str) -> dict:
             "predictive_basis": None,
         })
 
-    # Alert for divergence / islanding
-    if worst_diverged:
-        tripped = worst_diverged["tripped_element"]
-        n_isolated = worst_diverged["isolated_bus_count"]
+    # Alert for real islanding only (loss of supply to N>0 buses). Numerical
+    # non-convergence is NOT an outage and never raises an alert.
+    if worst_islanding and worst_islanding["isolated_bus_count"] > 0:
+        tripped = worst_islanding["tripped_element"]
+        n_isolated = worst_islanding["isolated_bus_count"]
         n1_alerts.append({
             "id": "ALR-N1-DIV",
             "severity": "CRITICAL",
@@ -161,8 +178,7 @@ def _worst_n1_for_hour(stem: str) -> dict:
             "category": "n1_contingency",
             "title": f"N-1 critical: tripping {tripped} causes loss of supply to {n_isolated} buses",
             "what": (
-                f"If {tripped} trips, the load flow diverges — "
-                f"loss of supply to {n_isolated} buses."
+                f"If {tripped} trips, {n_isolated} buses lose supply (islanding)."
             ),
             "action": "Immediate redispatch or topology change to restore N-1 security.",
             "impact_risk": "Islanding risk with potential blackout.",
@@ -198,9 +214,34 @@ def compute_hour(stem: str) -> dict:
     }
 
 
+def _alert_signature(alert: dict) -> tuple[str, str]:
+    """Stable identity for an alert episode (independent of changing loading numbers)."""
+    if str(alert.get("id", "")).startswith("ALR-N1"):
+        return (alert["id"], alert.get("element", ""))
+    return (alert.get("category", ""), alert.get("element", ""))
+
+
+def _dedupe_across_hours(hours: list[dict]) -> None:
+    """Suppress repeated alerts so a persistent episode is raised once, not every hour.
+
+    An alert is kept only on the first hour of a contiguous run of hours where its
+    signature is present; on subsequent consecutive hours it is dropped. A signature
+    that disappears for an hour can be re-raised, so a genuinely new episode still fires.
+    Mutates each hour's ``alerts.alerts`` list in place.
+    """
+    prev_sigs: set[tuple[str, str]] = set()
+    for hour in hours:
+        raw_alerts = hour["alerts"].get("alerts", [])
+        raw_sigs = {_alert_signature(a) for a in raw_alerts}
+        hour["alerts"]["alerts"] = [
+            a for a in raw_alerts if _alert_signature(a) not in prev_sigs
+        ]
+        prev_sigs = raw_sigs
+
+
 def compute_day_bundle(date: str, write: bool = True) -> dict:
     """Precompute 24 hours of state + alerts + N-1, plus a shift summary."""
-    from ..llm.orchestrator import shift_summary
+    from ..llm.orchestrator import summarise_shift
 
     # Normalise date to midnight stem
     parts = date.replace("-", "_").split("_")
@@ -221,10 +262,16 @@ def compute_day_bundle(date: str, write: bool = True) -> dict:
             print(f"  Hour {h:02d} skipped: {stem} (no snapshot)", flush=True)
             continue
 
-    # Generate shift summary for end of day
-    end_stem = shift_stem(base_stem, 23)
+    # Dedupe persistent alert episodes so the announcement/auto-pause fires once.
+    _dedupe_across_hours(hours)
+
+    # Night-shift handover (18:00 -> end of the loaded day) — captures the 19:00 incident.
+    night_hours = [
+        hr for hr in hours
+        if int(hr["datetime"].split("_")[3]) >= config.NIGHT_SHIFT_START_H
+    ]
     try:
-        summary = shift_summary(end_stem, window_h=12, write=False)
+        summary = summarise_shift(night_hours, shift_label="night", write=False)
         summary_text = summary.summary
     except Exception as exc:
         print(f"  Summary generation failed: {exc}")

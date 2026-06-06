@@ -189,45 +189,140 @@ def assess_risk(datetime: str, element: str, write: bool = True) -> RiskVerdict:
     return rv
 
 
+_SEVERITY_RANK = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1}
+
+_SHIFT_SYSTEM = (
+    "You write a 12-hour shift handover for a grid dispatcher (TSO ČEPS). British spelling, concise. "
+    "Report each incident with its time, element and severity, plus the dispatcher's decision and the "
+    "recommended/taken action; then the top constraints and the forward risk for the next shift. "
+    "If the data lists incidents you MUST report them — never say 'no incidents' when incidents exist. "
+    "Describe loadings below 80% as within limits, not as a risk. Only state figures present in the "
+    "data; do not invent numbers."
+)
+
+
+def _fmt_dt(stem: str) -> str:
+    """Snapshot stem -> 'HH:00 DD/MM/YYYY' for human-readable handover windows."""
+    y, m, d, h, _, _ = stem.split("_")
+    return f"{h}:00 {d}/{m}/{y}"
+
+
+def _incident(stem: str, alert: dict) -> dict:
+    h = stem.split("_")[3]
+    return {
+        "time": f"{h}:00",
+        "datetime": stem,
+        "severity": alert["severity"],
+        "element": alert["element"],
+        "title": alert["title"],
+        "action": alert.get("action"),
+        "category": alert.get("category"),
+    }
+
+
+def _shift_label(stem: str) -> str:
+    h = int(stem.split("_")[3])
+    return "night" if (h >= config.NIGHT_SHIFT_START_H or h < config.DAY_SHIFT_START_H) else "day"
+
+
+def _shift_window_start(end_stem: str) -> str:
+    """Start of the fixed 12-hour shift that ends at / contains ``end_stem``."""
+    h = int(end_stem.split("_")[3])
+    day_len = config.NIGHT_SHIFT_START_H - config.DAY_SHIFT_START_H  # 12
+    if h == config.NIGHT_SHIFT_START_H or h == config.DAY_SHIFT_START_H:
+        back = day_len  # exactly on a boundary -> the shift that just ended
+    elif config.DAY_SHIFT_START_H < h < config.NIGHT_SHIFT_START_H:
+        back = h - config.DAY_SHIFT_START_H  # in the day shift
+    else:  # in the night shift (crosses midnight)
+        ref = config.NIGHT_SHIFT_START_H if h > config.NIGHT_SHIFT_START_H else config.NIGHT_SHIFT_START_H - 24
+        back = h - ref
+    return shift_stem(end_stem, -back)
+
+
+def _render_shift_summary(incidents: list[dict], window_start: str, window_end: str, label: str) -> str:
+    """Deterministic, grounded LLM phrasing of a shift handover (temperature 0 + cache)."""
+    ordered = sorted(incidents, key=lambda i: (-_SEVERITY_RANK.get(i["severity"], 0), i["datetime"]))
+    signature = tuple((i["time"], i["severity"], i["element"]) for i in ordered)
+    cache_key = (label, window_start, window_end, signature)
+    if cache_key in _summary_text_cache:
+        return _summary_text_cache[cache_key]
+
+    payload = {
+        "shift": label,
+        "window_start": _fmt_dt(window_start),
+        "window_end": _fmt_dt(window_end),
+        "incident_count": len(ordered),
+        "incidents": ordered,
+    }
+    provider = get_provider()
+    text = _summarise(provider, _SHIFT_SYSTEM, json.dumps(payload, default=str))
+    _summary_text_cache[cache_key] = text
+    return text
+
+
+def summarise_shift(hours: list[dict], shift_label: str = "night", write: bool = True) -> ShiftSummary:
+    """Build a handover from already-computed per-hour bundle records (alerts incl. N-1)."""
+    incidents: list[dict] = []
+    for hr in hours:
+        for alert in hr.get("alerts", {}).get("alerts", []):
+            incidents.append(_incident(hr["datetime"], alert))
+
+    window_start = hours[0]["datetime"] if hours else DEFAULT_DATETIME
+    window_end = hours[-1]["datetime"] if hours else DEFAULT_DATETIME
+    summary = _render_shift_summary(incidents, window_start, window_end, shift_label)
+
+    result = ShiftSummary(
+        window_start=window_start,
+        window_end=window_end,
+        alert_count=len(incidents),
+        summary=summary,
+        events=incidents,
+    )
+    if write:
+        config.ensure_output_dir().joinpath("shift_summary.json").write_text(
+            json.dumps(result.model_dump(), indent=2, default=str), encoding="utf-8"
+        )
+    return result
+
+
 def shift_summary(datetime: str | None = None, window_h: int = 12, write: bool = True) -> ShiftSummary:
-    """Deterministic: gather alerts across the window, then a single LLM summarise call."""
+    """Ad-hoc handover for the /summary endpoint: align to the fixed shift window ending
+    at ``datetime`` and summarise the alerts within it. (The demo bundle uses
+    ``summarise_shift`` directly so the N-1 incident is included.)
+    """
     from ..analysis import alerts as alerts_mod
 
     end = datetime or DEFAULT_DATETIME
-    sample_offsets = sorted({window_h, window_h * 3 // 4, window_h // 2, window_h // 4, 0}, reverse=True)
+    window_start = _shift_window_start(end)
+
     events: list[dict] = []
-    for offset in sample_offsets:
-        stem = shift_stem(end, -offset)
+    incidents: list[dict] = []
+    stem = window_start
+    for _ in range(window_h + 1):
         try:
             payload = alerts_mod.generate_alerts(stem)
         except FileNotFoundError:
-            continue
-        events.append(
-            {
-                "datetime": stem,
-                "alert_count": len(payload["alerts"]),
-                "top": [a["title"] for a in payload["alerts"][:3]],
-            }
-        )
+            payload = None
+        if payload is not None:
+            alist = payload["alerts"]
+            events.append(
+                {
+                    "datetime": stem,
+                    "alert_count": len(alist),
+                    "top": [a["title"] for a in alist[:3]],
+                }
+            )
+            incidents.extend(_incident(stem, a) for a in alist)
+        if stem == end:
+            break
+        stem = shift_stem(stem, 1)
 
-    total_alerts = sum(e["alert_count"] for e in events)
-    cache_key = (end, window_h)
-    if cache_key in _summary_text_cache:
-        summary = _summary_text_cache[cache_key]
-    else:
-        provider = get_provider()
-        summary = _summarise(
-            provider,
-            "You write a 12-hour shift handover for a grid dispatcher. British spelling, concise, "
-            "highlight the binding constraints and any forecast risk. Use only the figures provided.",
-            json.dumps({"window_h": window_h, "events": events}, default=str),
-        )
-        _summary_text_cache[cache_key] = summary
+    summary = _render_shift_summary(incidents, window_start, end, _shift_label(end))
 
     result = ShiftSummary(
-        window_start=events[-1]["datetime"] if events else end,
+        window_start=window_start,
         window_end=end,
-        alert_count=total_alerts,
+        alert_count=len(incidents),
         summary=summary,
         events=events,
     )

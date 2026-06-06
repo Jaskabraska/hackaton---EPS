@@ -68,6 +68,11 @@ V_PU_MAX = float(os.getenv("V_PU_MAX", "1.05"))
 # even when the binding element stays below the loading-alert threshold.
 FORECAST_WATCH_RATIO = float(os.getenv("FORECAST_WATCH_RATIO", "1.10"))
 
+# --- Shift handover windows (fixed 12-hour shifts) ---
+# Day shift 06:00-18:00, night shift 18:00-06:00 (night crosses midnight).
+DAY_SHIFT_START_H = int(os.getenv("DAY_SHIFT_START_H", "6"))
+NIGHT_SHIFT_START_H = int(os.getenv("NIGHT_SHIFT_START_H", "18"))
+
 # --- LLM ---
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
 LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")

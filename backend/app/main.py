@@ -153,6 +153,35 @@ def post_playbook(element: str, datetime: str = "2024_02_17_19_00_00") -> dict:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@app.post("/decision")
+def post_decision(
+    element: str,
+    decision: str,
+    datetime: str = "2024_02_17_19_00_00",
+    recommended_action: str | None = None,
+) -> dict:
+    """Log a dispatcher decision (e.g. an 'acknowledged, no action' disapproval) to output/."""
+    import json
+
+    record = {
+        "element": element,
+        "datetime": datetime,
+        "decision": decision,
+        "recommended_action": recommended_action,
+        "decided_at": _dt_now(),
+    }
+    out = config.ensure_output_dir() / "decisions.jsonl"
+    with out.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record) + "\n")
+    return {"logged": record}
+
+
+def _dt_now() -> str:
+    from datetime import datetime as _d
+
+    return _d.now().isoformat(timespec="seconds")
+
+
 @app.get("/debug/llm")
 def debug_llm() -> dict:
     """Diagnose the LLM provider: plain text call, then a minimal tool-calling call."""

@@ -106,7 +106,7 @@ export default function PlaybackControls({ onHourChange, onPause, onComplete, is
           disabled={loading}
           className="px-4 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-sm font-medium text-white disabled:opacity-50"
         >
-          {loading ? "Loading..." : "Load demo day"}
+          {loading ? "Loading..." : "Apply"}
         </button>
         {error && <span className="text-xs text-red-400">{error}</span>}
       </div>

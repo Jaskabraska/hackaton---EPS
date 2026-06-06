@@ -57,3 +57,9 @@ export const runPlaybook = (element: string, datetime: string) =>
 
 export const fetchRiskVerdict = (element: string, datetime: string) =>
   getJson<RiskVerdict>(`/assess?element=${encodeURIComponent(element)}&datetime=${encodeURIComponent(datetime)}`)
+
+export const logDecision = (element: string, datetime: string, decision: string) =>
+  postJson<Record<string, unknown>>(
+    `/decision?element=${encodeURIComponent(element)}&datetime=${encodeURIComponent(datetime)}&decision=${encodeURIComponent(decision)}`,
+    {}
+  )
