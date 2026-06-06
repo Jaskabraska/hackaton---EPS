@@ -58,8 +58,17 @@ export const runPlaybook = (element: string, datetime: string) =>
 export const fetchRiskVerdict = (element: string, datetime: string) =>
   getJson<RiskVerdict>(`/assess?element=${encodeURIComponent(element)}&datetime=${encodeURIComponent(datetime)}`)
 
-export const logDecision = (element: string, datetime: string, decision: string) =>
-  postJson<Record<string, unknown>>(
-    `/decision?element=${encodeURIComponent(element)}&datetime=${encodeURIComponent(datetime)}&decision=${encodeURIComponent(decision)}`,
-    {}
-  )
+export const logDecision = (
+  element: string,
+  datetime: string,
+  decision: string,
+  recommendedAction?: string | null
+) => {
+  const params = new URLSearchParams({
+    element,
+    datetime,
+    decision
+  })
+  if (recommendedAction) params.set("recommended_action", recommendedAction)
+  return postJson<Record<string, unknown>>(`/decision?${params.toString()}`, {})
+}

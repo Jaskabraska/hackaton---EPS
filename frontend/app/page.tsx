@@ -13,7 +13,7 @@ import KpiTiles from "@/components/KpiTiles"
 import Modal from "@/components/Modal"
 import NodeInspector from "@/components/NodeInspector"
 import PlaybackControls from "@/components/PlaybackControls"
-import { fetchAlerts, fetchMap, fetchState, logDecision, runPlaybook } from "@/lib/api"
+import { fetchAlerts, fetchMap, fetchState, fetchSummary, logDecision, runPlaybook } from "@/lib/api"
 import type {
   Alert,
   AlertsPayload,
@@ -112,17 +112,22 @@ export default function Page() {
 
   // Playback complete
   const handleComplete = useCallback((bundle: DayBundle) => {
-    setSummaryText(bundle.summary)
-    setShowSummary(true)
-  }, [])
+    const end = bundle.hours[bundle.hours.length - 1]?.datetime ?? datetime
+    fetchSummary(end)
+      .then((summary) => setSummaryText(summary.summary))
+      .catch(() => setSummaryText(bundle.summary))
+      .finally(() => setShowSummary(true))
+  }, [datetime])
 
   // Approve from announcement — run playbook
   const handleApprove = async () => {
     if (!announcementAlert) return
+    const alert = announcementAlert
     setPlaybookLoading(true)
     setAnnouncementAlert(null)
     try {
-      const result = await runPlaybook(announcementAlert.element, datetime)
+      await logDecision(alert.element, datetime, "approved_investigate", alert.action).catch(() => undefined)
+      const result = await runPlaybook(alert.element, datetime)
       setIncidentReport(result)
     } catch (e) {
       setError(`Playbook failed: ${e}`)
@@ -134,7 +139,12 @@ export default function Page() {
   // Disapprove: log the acknowledgement (no action), then resume
   const handleDismiss = () => {
     if (announcementAlert) {
-      logDecision(announcementAlert.element, datetime, "acknowledged_no_action").catch(() => {})
+      logDecision(
+        announcementAlert.element,
+        datetime,
+        "acknowledged_no_action",
+        announcementAlert.action
+      ).catch(() => {})
     }
     setAnnouncementAlert(null)
     setIsPaused(false)

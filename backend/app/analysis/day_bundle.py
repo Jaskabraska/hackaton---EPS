@@ -18,6 +18,9 @@ from ..analysis import alerts as alerts_mod
 from ..analysis.forecasts import shift_stem
 from ..grid import contingency, loader, state
 
+DEMO_SHIFT_START_H = 11
+DEMO_SHIFT_END_H = 23
+
 
 def _find_worst_branch(stem: str, tripped_element: str) -> tuple[str | None, float]:
     """After tripping an element, find the highest-loaded remaining branch."""
@@ -147,8 +150,11 @@ def _worst_n1_for_hour(stem: str) -> dict:
         affected = worst_converged["affected_element"]
         # If affected_element is unknown (no branch >100%), find the highest-loaded branch
         if not affected and tripped:
-            affected, _ = _find_worst_branch(stem, tripped)
+            affected, affected_pct = _find_worst_branch(stem, tripped)
             worst_converged["affected_element"] = affected
+            worst_converged["affected_loading_percent"] = affected_pct or loading
+        elif affected and worst_converged.get("affected_loading_percent") is None:
+            worst_converged["affected_loading_percent"] = loading
         affected = affected or "an element"
         n1_alerts.append({
             "id": "ALR-N1-OL",
@@ -164,6 +170,8 @@ def _worst_n1_for_hour(stem: str) -> dict:
             "impact_risk": "A single trip could cause cascading overload.",
             "financial": None,
             "predictive_basis": None,
+            "tripped_element": tripped,
+            "affected_loading_percent": round(float(loading), 2),
         })
 
     # Alert for real islanding only (loss of supply to N>0 buses). Numerical
@@ -190,6 +198,104 @@ def _worst_n1_for_hour(stem: str) -> dict:
     worst["n1_alert"] = n1_alerts[0] if n1_alerts else None
     worst["n1_alerts"] = n1_alerts
     return worst
+
+
+def _safe_loading(value) -> float:
+    try:
+        return round(float(value), 2)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _ensure_affected_loading(worst: dict) -> tuple[str | None, float]:
+    """Fill affected loading from stored worst-N-1 data without recomputing load flow."""
+    loading = _safe_loading(worst.get("worst_loading_percent"))
+
+    affected = worst.get("affected_element")
+    if not affected:
+        existing = worst.get("n1_alert") or {}
+        affected = existing.get("element")
+        if affected:
+            worst["affected_element"] = affected
+    if not affected:
+        alerts = worst.get("n1_alerts") or []
+        if alerts:
+            affected = alerts[0].get("element")
+            if affected:
+                worst["affected_element"] = affected
+
+    if affected and worst.get("affected_loading_percent") is None and loading > 0:
+        worst["affected_loading_percent"] = loading
+
+    return affected, loading
+
+
+def _n1_alerts_from_worst(worst: dict) -> list[dict]:
+    """Rebuild N-1 alerts from a stored ``worst_n1`` record.
+
+    This is intentionally data-only: it consumes the per-hour N-1 result already
+    stored in the bundle and does not run pandapower.
+    """
+    alerts: list[dict] = []
+    affected, loading = _ensure_affected_loading(worst)
+    tripped = worst.get("tripped_element")
+
+    if worst.get("converged") and loading > config.LINE_ALERT_PCT and tripped:
+        severity = "CRITICAL" if loading > 100.0 else "HIGH"
+        element = affected or "an element"
+        alerts.append({
+            "id": "ALR-N1-OL",
+            "severity": severity,
+            "element": element,
+            "category": "n1_contingency",
+            "title": f"N-1 risk: if {tripped} trips, {element} reaches {loading:.0f}%",
+            "what": (
+                f"At this hour the grid is N-1 at risk: if {tripped} trips, "
+                f"{element} would rise to {loading:.1f}% (over its {config.LINE_ALERT_PCT:.0f}% limit)."
+            ),
+            "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+            "impact_risk": "A single trip could cause cascading overload.",
+            "financial": None,
+            "predictive_basis": None,
+            "tripped_element": tripped,
+            "affected_loading_percent": loading,
+        })
+
+    isolated = int(worst.get("isolated_bus_count") or 0)
+    if worst.get("status") == "islanding" and isolated > 0 and tripped:
+        alerts.append({
+            "id": "ALR-N1-DIV",
+            "severity": "CRITICAL",
+            "element": tripped,
+            "category": "n1_contingency",
+            "title": f"N-1 critical: tripping {tripped} causes loss of supply to {isolated} buses",
+            "what": f"If {tripped} trips, {isolated} buses lose supply (islanding).",
+            "action": "Immediate redispatch or topology change to restore N-1 security.",
+            "impact_risk": "Islanding risk with potential blackout.",
+            "financial": None,
+            "predictive_basis": None,
+            "tripped_element": tripped,
+            "affected_loading_percent": None,
+        })
+
+    return alerts
+
+
+def rederive_hour_alerts(hour: dict) -> None:
+    """Refresh a bundle hour's N-1 alerts from its stored worst-N-1 result."""
+    worst = hour.get("worst_n1") or {}
+    n1_alerts = _n1_alerts_from_worst(worst)
+    worst["n1_alert"] = n1_alerts[0] if n1_alerts else None
+    worst["n1_alerts"] = n1_alerts
+    hour["worst_n1"] = worst
+
+    payload = dict(hour.get("alerts") or {})
+    existing = payload.get("alerts") or []
+    payload["alerts"] = [
+        alert for alert in existing
+        if alert.get("category") != "n1_contingency" and not str(alert.get("id", "")).startswith("ALR-N1")
+    ] + n1_alerts
+    hour["alerts"] = payload
 
 
 def compute_hour(stem: str) -> dict:
@@ -265,13 +371,10 @@ def compute_day_bundle(date: str, write: bool = True) -> dict:
     # Dedupe persistent alert episodes so the announcement/auto-pause fires once.
     _dedupe_across_hours(hours)
 
-    # Night-shift handover (18:00 -> end of the loaded day) — captures the 19:00 incident.
-    night_hours = [
-        hr for hr in hours
-        if int(hr["datetime"].split("_")[3]) >= config.NIGHT_SHIFT_START_H
-    ]
+    # Demo handover (11:00 -> 23:00) captures the verified 19:00 N-1 incident.
+    summary_hours = _demo_shift_hours(hours)
     try:
-        summary = summarise_shift(night_hours, shift_label="night", write=False)
+        summary = summarise_shift(summary_hours, shift_label="demo", write=False)
         summary_text = summary.summary
     except Exception as exc:
         print(f"  Summary generation failed: {exc}")
@@ -292,7 +395,55 @@ def compute_day_bundle(date: str, write: bool = True) -> dict:
     return bundle
 
 
+def _demo_shift_hours(hours: list[dict]) -> list[dict]:
+    return [
+        hr for hr in hours
+        if DEMO_SHIFT_START_H <= int(hr["datetime"].split("_")[3]) <= DEMO_SHIFT_END_H
+    ]
+
+
+def rederive_day_bundle(date: str = "2024_02_17", write: bool = True) -> dict:
+    """Rebuild bundle alerts and summary from stored state/worst_n1 records.
+
+    This is the fast repair path for demo alert/summary wording. It never calls
+    ``compute_hour`` or the pandapower N-1 sweep.
+    """
+    from ..llm.orchestrator import summarise_shift
+
+    safe_date = date.replace("-", "_")
+    path = config.OUTPUT_DIR / f"day_bundle_{safe_date}.json"
+    if not path.exists():
+        raise FileNotFoundError(f"Day bundle not found: {path}")
+
+    bundle = json.loads(path.read_text(encoding="utf-8"))
+    hours = bundle.get("hours", [])
+    for hour in hours:
+        rederive_hour_alerts(hour)
+
+    _dedupe_across_hours(hours)
+
+    summary_hours = _demo_shift_hours(hours)
+    summary = summarise_shift(summary_hours, shift_label="demo", write=False)
+    bundle["hours"] = hours
+    bundle["summary"] = summary.summary
+    bundle["summary_window"] = {
+        "window_start": summary.window_start,
+        "window_end": summary.window_end,
+        "alert_count": summary.alert_count,
+    }
+
+    if write:
+        path.write_text(json.dumps(bundle, indent=2, default=str), encoding="utf-8")
+        print(f"Bundle rederived from stored worst_n1 records: {path}")
+
+    return bundle
+
+
 if __name__ == "__main__":
-    target_date = sys.argv[1] if len(sys.argv) > 1 else "2024_02_17"
-    print(f"Computing day bundle for {target_date} ...")
-    compute_day_bundle(target_date)
+    if len(sys.argv) > 1 and sys.argv[1] == "rederive":
+        target_date = sys.argv[2] if len(sys.argv) > 2 else "2024_02_17"
+        rederive_day_bundle(target_date)
+    else:
+        target_date = sys.argv[1] if len(sys.argv) > 1 else "2024_02_17"
+        print(f"Computing day bundle for {target_date} ...")
+        compute_day_bundle(target_date)

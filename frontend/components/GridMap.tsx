@@ -1,8 +1,26 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import type { Alert, GridMapData, MapEdge, MapNode } from "@/lib/types"
+
+/* Map the backend's simplified gen type to a generated energy icon (served from /public). */
+const GEN_TYPE_ICON: Record<string, string> = {
+  solar: "/icons/types/solar.svg",
+  wind: "/icons/types/wind.svg",
+  hydro: "/icons/types/hydro.svg",
+  biomass: "/icons/types/biomass.svg",
+  geothermal: "/icons/types/geothermal.svg",
+  gas: "/icons/types/combined_cycle_gas.svg",
+  coal: "/icons/types/steam_coal.svg",
+  oil: "/icons/types/combustion_oil.svg",
+  other: "/icons/types/steam_other.svg",
+}
+
+function genTypeIcon(type: string | null | undefined): string | null {
+  if (!type) return null
+  return GEN_TYPE_ICON[type] ?? null
+}
 
 function edgeColour(loading: number): string {
   if (loading >= 100) return "#ef4444"
@@ -62,70 +80,28 @@ function NodeIcon({
   )
 
   const type = node.primary_gen_type
+  const icon = node.is_producer ? genTypeIcon(type) : null
 
-  // Solar: diamond
-  if (type === "solar") {
-    const d = r * 1.1
+  // Producer with a known generation type: render the generated energy icon.
+  // The icon carries its own brand colour; a ring conveys band/selection status.
+  if (icon) {
+    const size = r * 2.2
+    const ringR = r * 1.25
+    const ringStroke = !node.in_band ? "#ef4444" : isSelected ? "#ffffff" : "transparent"
+    const ringW = !node.in_band ? 2.5 : isSelected ? 2.5 : 0
     return (
       <g {...common}>
-        <polygon
-          points={`${x},${y - d} ${x + d},${y} ${x},${y + d} ${x - d},${y}`}
-          fill={fill}
-          stroke={stroke}
-          strokeWidth={strokeW}
+        {ringW > 0 && (
+          <circle cx={x} cy={y} r={ringR} fill="none" stroke={ringStroke} strokeWidth={ringW} />
+        )}
+        <image
+          href={icon}
+          x={x - size / 2}
+          y={y - size / 2}
+          width={size}
+          height={size}
+          preserveAspectRatio="xMidYMid meet"
         />
-        <circle cx={x} cy={y} r={r * 0.35} fill="#ffffff60" />
-        {title}
-      </g>
-    )
-  }
-
-  // Wind: circle with spokes
-  if (type === "wind") {
-    return (
-      <g {...common}>
-        <circle cx={x} cy={y} r={r} fill={fill} stroke={stroke} strokeWidth={strokeW} />
-        {[0, 120, 240].map((angle) => {
-          const rad = (angle * Math.PI) / 180
-          return (
-            <line
-              key={angle}
-              x1={x}
-              y1={y}
-              x2={x + Math.cos(rad) * r * 0.8}
-              y2={y + Math.sin(rad) * r * 0.8}
-              stroke="#ffffff80"
-              strokeWidth={1.5}
-            />
-          )
-        })}
-        {title}
-      </g>
-    )
-  }
-
-  // Hydro: circle with wave
-  if (type === "hydro") {
-    return (
-      <g {...common}>
-        <circle cx={x} cy={y} r={r} fill={fill} stroke={stroke} strokeWidth={strokeW} />
-        <path
-          d={`M${x - r * 0.6},${y} Q${x - r * 0.3},${y - r * 0.3} ${x},${y} Q${x + r * 0.3},${y + r * 0.3} ${x + r * 0.6},${y}`}
-          fill="none"
-          stroke="#ffffff60"
-          strokeWidth={1.5}
-        />
-        {title}
-      </g>
-    )
-  }
-
-  // Gas/coal/oil/biomass/nuclear: circle with chimney
-  if (type === "gas" || type === "coal" || type === "oil" || type === "biomass" || type === "nuclear" || type === "geothermal") {
-    return (
-      <g {...common}>
-        <circle cx={x} cy={y} r={r} fill={fill} stroke={stroke} strokeWidth={strokeW} />
-        <rect x={x - r * 0.15} y={y - r - r * 0.5} width={r * 0.3} height={r * 0.5} fill={fill} rx={1} />
         {title}
       </g>
     )
@@ -280,9 +256,25 @@ export default function GridMap({
   alerts?: Alert[]
 }) {
   const svgRef = useRef<SVGSVGElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [viewBox, setViewBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const dragStart = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null)
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === containerRef.current)
+    document.addEventListener("fullscreenchange", onChange)
+    return () => document.removeEventListener("fullscreenchange", onChange)
+  }, [])
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      containerRef.current?.requestFullscreen()
+    }
+  }, [])
 
   const getComputedViewBox = useCallback(() => {
     if (!data) return { x: 0, y: 0, w: 100, h: 100 }
@@ -350,7 +342,7 @@ export default function GridMap({
   const resetView = () => setViewBox(null)
 
   return (
-    <div className="relative w-full h-full">
+    <div ref={containerRef} className="relative w-full h-full bg-grid-bg">
       <svg
         ref={svgRef}
         viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
@@ -404,15 +396,33 @@ export default function GridMap({
         ))}
       </svg>
 
-      {/* Reset zoom button */}
-      {viewBox && (
+      {/* Controls */}
+      <div className="absolute top-2 right-2 flex gap-2">
+        {viewBox && (
+          <button
+            onClick={resetView}
+            className="px-2 py-1 text-xs bg-grid-panel/80 border border-grid-edge rounded text-slate-300 hover:text-white"
+          >
+            Reset view
+          </button>
+        )}
         <button
-          onClick={resetView}
-          className="absolute top-2 right-2 px-2 py-1 text-xs bg-grid-panel/80 border border-grid-edge rounded text-slate-300 hover:text-white"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Exit full screen" : "Full screen"}
+          aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+          className="px-2 py-1 text-xs bg-grid-panel/80 border border-grid-edge rounded text-slate-300 hover:text-white"
         >
-          Reset view
+          {isFullscreen ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+            </svg>
+          )}
         </button>
-      )}
+      </div>
     </div>
   )
 }

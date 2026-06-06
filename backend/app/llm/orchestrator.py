@@ -21,7 +21,7 @@ SUMMARY_SEED = 7
 # Cache the LLM-phrased summary text per (window_end, window_h) so repeated identical
 # requests are byte-identical even if the provider drifts. Keyed by the deterministic
 # inputs; the gathered events/counts are already deterministic.
-_summary_text_cache: dict[tuple[str, int], str] = {}
+_summary_text_cache: dict[tuple, str] = {}
 
 HARD_RULES = (
     "You are Grid Pulse, an assistant for a transmission grid dispatcher (TSO ČEPS).\n"
@@ -40,6 +40,27 @@ def _glossary_text() -> str:
 
 def build_system_prompt() -> str:
     return f"{HARD_RULES}\n\nGLOSSARY (terminology only):\n{_glossary_text()}"
+
+
+def _decision_for(stem: str, *elements: str | None) -> dict | None:
+    """Return the latest logged dispatcher decision for this hour/element."""
+    wanted = {e for e in elements if e}
+    if not wanted:
+        return None
+
+    path = config.OUTPUT_DIR / "decisions.jsonl"
+    if not path.exists():
+        return None
+
+    latest: dict | None = None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if record.get("datetime") == stem and record.get("element") in wanted:
+            latest = record
+    return latest
 
 
 def _tool_message(call_id: str, result: dict) -> dict:
@@ -196,8 +217,9 @@ _SHIFT_SYSTEM = (
     "Report each incident with its time, element and severity, plus the dispatcher's decision and the "
     "recommended/taken action; then the top constraints and the forward risk for the next shift. "
     "If the data lists incidents you MUST report them — never say 'no incidents' when incidents exist. "
-    "Describe loadings below 80% as within limits, not as a risk. Only state figures present in the "
-    "data; do not invent numbers."
+    "Use the exact window_start/window_end values from the JSON; do not correct, extend or infer a "
+    "different shift. If a decision is null, say it is not recorded. Describe loadings below 80% as "
+    "within limits, not as a risk. Only state figures present in the data; do not invent numbers."
 )
 
 
@@ -209,6 +231,7 @@ def _fmt_dt(stem: str) -> str:
 
 def _incident(stem: str, alert: dict) -> dict:
     h = stem.split("_")[3]
+    decision = _decision_for(stem, alert.get("element"), alert.get("tripped_element"))
     return {
         "time": f"{h}:00",
         "datetime": stem,
@@ -217,6 +240,12 @@ def _incident(stem: str, alert: dict) -> dict:
         "title": alert["title"],
         "action": alert.get("action"),
         "category": alert.get("category"),
+        "tripped_element": alert.get("tripped_element"),
+        "affected_loading_percent": alert.get("affected_loading_percent"),
+        "decision": decision.get("decision") if decision else "not recorded",
+        "recommended_action": (
+            decision.get("recommended_action") if decision and decision.get("recommended_action") else alert.get("action")
+        ),
     }
 
 
@@ -239,11 +268,117 @@ def _shift_window_start(end_stem: str) -> str:
     return shift_stem(end_stem, -back)
 
 
-def _render_shift_summary(incidents: list[dict], window_start: str, window_end: str, label: str) -> str:
+def _constraints_from_hours(hours: list[dict]) -> list[dict]:
+    constraints: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+    for hr in hours:
+        state = hr.get("state") or {}
+        binding = state.get("binding_constraint") or {}
+        element = binding.get("element")
+        if not element:
+            continue
+        key = (hr["datetime"], element)
+        if key in seen:
+            continue
+        seen.add(key)
+        constraints.append({
+            "time": f"{hr['datetime'].split('_')[3]}:00",
+            "datetime": hr["datetime"],
+            "element": element,
+            "kind": binding.get("kind"),
+            "loading_percent": binding.get("loading_percent"),
+            "within_limits": binding.get("within_limits"),
+        })
+    return sorted(
+        constraints,
+        key=lambda c: float(c.get("loading_percent") or 0.0),
+        reverse=True,
+    )[:3]
+
+
+def _grounded_summary(payload: dict) -> str:
+    """Deterministic fallback if the LLM output omits required bundle facts."""
+    lines = [
+        f"Shift handover ({payload['shift']}): {payload['window_start']} to {payload['window_end']}.",
+    ]
+    incidents = payload["incidents"]
+    if incidents:
+        lines.append(f"Incidents: {len(incidents)}.")
+        for incident in incidents:
+            loading = incident.get("affected_loading_percent")
+            loading_text = f" to {float(loading):.1f}%" if loading is not None else ""
+            tripped = incident.get("tripped_element")
+            if tripped:
+                description = (
+                    f"tripping {tripped} would drive {incident['element']}{loading_text}"
+                )
+            else:
+                description = incident["title"]
+            lines.append(
+                f"- {incident['time']} {incident['severity']}: {description}. "
+                f"Decision: {incident.get('decision') or 'not recorded'}. "
+                f"Recommended action: {incident.get('recommended_action') or incident.get('action') or 'not recorded'}"
+            )
+    else:
+        lines.append("Incidents: none recorded in the selected window.")
+
+    constraints = payload.get("top_constraints") or []
+    if constraints:
+        parts = [
+            f"{c['element']} at {float(c['loading_percent']):.1f}% ({'within limits' if c.get('within_limits') else 'above threshold'})"
+            for c in constraints
+            if c.get("loading_percent") is not None
+        ]
+        if parts:
+            lines.append(f"Top constraints: {'; '.join(parts)}.")
+
+    if incidents:
+        lines.append("Forward risk: keep redispatch ready for the N-1 contingency corridor and monitor the next shift.")
+    else:
+        lines.append("Forward risk: continue routine monitoring; no incident-driven action is recorded.")
+    return "\n".join(lines)
+
+
+def _summary_needs_fallback(text: str, payload: dict) -> bool:
+    incidents = payload["incidents"]
+    if not text.strip():
+        return True
+    if incidents and "no incident" in text.lower():
+        return True
+    for incident in incidents:
+        required = [incident.get("element"), incident.get("tripped_element")]
+        for value in required:
+            if value and value not in text:
+                return True
+        loading = incident.get("affected_loading_percent")
+        if loading is not None and f"{float(loading):.1f}" not in text:
+            return True
+    return False
+
+
+def _render_shift_summary(
+    incidents: list[dict],
+    window_start: str,
+    window_end: str,
+    label: str,
+    constraints: list[dict] | None = None,
+) -> str:
     """Deterministic, grounded LLM phrasing of a shift handover (temperature 0 + cache)."""
     ordered = sorted(incidents, key=lambda i: (-_SEVERITY_RANK.get(i["severity"], 0), i["datetime"]))
-    signature = tuple((i["time"], i["severity"], i["element"]) for i in ordered)
-    cache_key = (label, window_start, window_end, signature)
+    top_constraints = constraints or []
+    incident_signature = tuple(
+        (
+            i["time"],
+            i["severity"],
+            i["element"],
+            i.get("tripped_element"),
+            i.get("affected_loading_percent"),
+            i.get("decision"),
+        )
+        for i in ordered
+    )
+    constraint_signature = tuple((c.get("element"), c.get("loading_percent")) for c in top_constraints)
+    cache_key = (label, window_start, window_end, incident_signature, constraint_signature)
     if cache_key in _summary_text_cache:
         return _summary_text_cache[cache_key]
 
@@ -253,9 +388,12 @@ def _render_shift_summary(incidents: list[dict], window_start: str, window_end: 
         "window_end": _fmt_dt(window_end),
         "incident_count": len(ordered),
         "incidents": ordered,
+        "top_constraints": top_constraints,
     }
     provider = get_provider()
     text = _summarise(provider, _SHIFT_SYSTEM, json.dumps(payload, default=str))
+    if _summary_needs_fallback(text, payload):
+        text = _grounded_summary(payload)
     _summary_text_cache[cache_key] = text
     return text
 
@@ -269,7 +407,13 @@ def summarise_shift(hours: list[dict], shift_label: str = "night", write: bool =
 
     window_start = hours[0]["datetime"] if hours else DEFAULT_DATETIME
     window_end = hours[-1]["datetime"] if hours else DEFAULT_DATETIME
-    summary = _render_shift_summary(incidents, window_start, window_end, shift_label)
+    summary = _render_shift_summary(
+        incidents,
+        window_start,
+        window_end,
+        shift_label,
+        constraints=_constraints_from_hours(hours),
+    )
 
     result = ShiftSummary(
         window_start=window_start,
@@ -285,6 +429,36 @@ def summarise_shift(hours: list[dict], shift_label: str = "night", write: bool =
     return result
 
 
+def _summary_from_bundle(datetime: str, window_h: int, write: bool) -> ShiftSummary | None:
+    """Use the precomputed demo bundle when it contains the requested handover."""
+    from ..grid.loader import normalise_datetime
+
+    end = normalise_datetime(datetime)
+    date = "_".join(end.split("_")[:3])
+    path = config.OUTPUT_DIR / f"day_bundle_{date}.json"
+    if not path.exists():
+        return None
+
+    try:
+        bundle = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+
+    hours = bundle.get("hours") or []
+    known = {hr.get("datetime") for hr in hours}
+    if end not in known:
+        return None
+
+    window_start = shift_stem(end, -window_h)
+    selected = [
+        hr for hr in hours
+        if window_start <= hr.get("datetime", "") <= end
+    ]
+    if not selected:
+        return None
+    return summarise_shift(selected, shift_label="demo", write=write)
+
+
 def shift_summary(datetime: str | None = None, window_h: int = 12, write: bool = True) -> ShiftSummary:
     """Ad-hoc handover for the /summary endpoint: align to the fixed shift window ending
     at ``datetime`` and summarise the alerts within it. (The demo bundle uses
@@ -293,6 +467,10 @@ def shift_summary(datetime: str | None = None, window_h: int = 12, write: bool =
     from ..analysis import alerts as alerts_mod
 
     end = datetime or DEFAULT_DATETIME
+    bundle_summary = _summary_from_bundle(end, window_h, write)
+    if bundle_summary is not None:
+        return bundle_summary
+
     window_start = _shift_window_start(end)
 
     events: list[dict] = []
