@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="combined_cycle_gas, combustion_gas, hydro, internal_combustion_gas, solar"><path d="M50 50 L50.000 0.000 A50 50 0 0 1 97.553 34.549 Z" fill="#0d9488"/><path d="M50 50 L97.553 34.549 A50 50 0 0 1 79.389 90.451 Z" fill="#f97316"/><path d="M50 50 L79.389 90.451 A50 50 0 0 1 20.611 90.451 Z" fill="#2563eb"/><path d="M50 50 L20.611 90.451 A50 50 0 0 1 2.447 34.549 Z" fill="#9a3412"/><path d="M50 50 L2.447 34.549 A50 50 0 0 1 50.000 0.000 Z" fill="#f59e0b"/><line x1="50" y1="50" x2="50.000" y2="0.000" stroke="#fff" stroke-width="2"/><line x1="50" y1="50" x2="97.553" y2="34.549" stroke="#fff" stroke-width="2"/><line x1="50" y1="50" x2="79.389" y2="90.451" stroke="#fff" stroke-width="2"/><line x1="50" y1="50" x2="20.611" y2="90.451" stroke="#fff" stroke-width="2"/><line x1="50" y1="50" x2="2.447" y2="34.549" stroke="#fff" stroke-width="2"/><svg x="57.96" y="18.85" width="17" height="17" viewBox="0 0 24 24">
+    <g fill="#fff">
+      <path d="M10.3 3 C 12.8 6.5, 14.3 8.2, 14.3 12 a4 4 0 0 1 -8 0 c0 -1.8 0.8 -3 2 -4 c-0.2 1.6 0.5 2.6 1.3 2.9 c1.1 -2 -0.9 -4.5 -0.8 -7.9 Z"/>
+      <path d="M17 9 C 18.3 10.8, 19 11.7, 19 13.5 a2 2 0 0 1 -4 0 c0 -0.9 0.4 -1.5 1 -2 c-0.1 0.8 0.3 1.3 0.7 1.4 c0.55 -1 -0.4 -2.3 -0.4 -3.9 Z"/>
+    </g></svg><svg x="68.13" y="50.15" width="17" height="17" viewBox="0 0 24 24">
+    <path d="M12 2.5 C 15 6.5, 17 8.5, 17 13 a5 5 0 0 1 -10 0 c0 -2.2 1 -3.8 2.4 -5 c-0.2 2 0.6 3.2 1.6 3.6 c1.4 -2.4 -1.2 -5.6 -1 -9.1 Z" fill="#fff"/></svg><svg x="41.50" y="69.50" width="17" height="17" viewBox="0 0 24 24">
+    <path d="M12 2.5 C 8 8.5, 5.5 12, 5.5 15.5 a6.5 6.5 0 0 0 13 0 C 18.5 12, 16 8.5, 12 2.5 Z" fill="#fff"/></svg><svg x="14.87" y="50.15" width="17" height="17" viewBox="0 0 24 24">
+    <g fill="#fff">
+      <rect x="8.5" y="3" width="7" height="6" rx="1"/>
+      <rect x="10.8" y="9" width="2.4" height="4.5"/>
+      <circle cx="12" cy="17.5" r="1.3"/>
+    </g>
+    <circle cx="12" cy="17.5" r="4" fill="none" stroke="#fff" stroke-width="2"/></svg><svg x="25.04" y="18.85" width="17" height="17" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="4.4" fill="#fff"/>
+    <g stroke="#fff" stroke-width="2" stroke-linecap="round">
+      <line x1="12" y1="1.6" x2="12" y2="4"/>
+      <line x1="12" y1="20" x2="12" y2="22.4"/>
+      <line x1="1.6" y1="12" x2="4" y2="12"/>
+      <line x1="20" y1="12" x2="22.4" y2="12"/>
+      <line x1="4.4" y1="4.4" x2="6.1" y2="6.1"/>
+      <line x1="17.9" y1="17.9" x2="19.6" y2="19.6"/>
+      <line x1="19.6" y1="4.4" x2="17.9" y2="6.1"/>
+      <line x1="4.4" y1="19.6" x2="6.1" y2="17.9"/>
+    </g></svg></svg>
