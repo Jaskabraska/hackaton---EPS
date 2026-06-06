@@ -2,6 +2,12 @@
 greenhack-2026-ČEPS-dataset/
 .DS_Store
 
+# Challenge brief — committee-owned, do not redistribute
+Grid Pulse Challenge(1).pdf
+
+# Stray duplicate lockfiles (macOS/iCloud " 2" copies)
+* 2.json
+
 # Secrets
 .env
 backend/.env
