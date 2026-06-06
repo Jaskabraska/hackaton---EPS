@@ -57,6 +57,10 @@ class ContingencyResult(BaseModel):
     n1_secure: bool
     new_overloads: list[BranchLoading]
     worst_loading_percent: float
+    isolated_bus_count: int = 0
+    # Exactly one outcome per trip. "secure"/"overload" converge; "islanding" loses >0 buses;
+    # "nonconvergence" fails the load flow with 0 isolated buses (possible instability, not an outage).
+    status: Literal["secure", "overload", "islanding", "nonconvergence"] = "secure"
 
 
 class Alert(BaseModel):

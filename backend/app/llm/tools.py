@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..analysis import alerts as alerts_mod
-from ..analysis import economics, forecasts
+from ..analysis import analogues, economics, forecasts
 from ..grid import contingency, state, topology
 
 PROPOSE_ACTION = "propose_action"
@@ -146,7 +146,7 @@ def dispatch(name: str, args: dict[str, Any], default_datetime: str) -> dict:
             float(args["delta_mw"]), float(args["hours"]), args.get("fuel", economics.DEFAULT_FUEL)
         )
     if name == "find_analogues":
-        return {"available": False, "reason": "FAISS analogues not enabled in this build"}
+        return analogues.find_analogues(dt)
     if name == PROPOSE_ACTION:
         return {
             "kind": args.get("kind", "assess_risk"),

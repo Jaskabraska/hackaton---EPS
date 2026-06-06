@@ -71,6 +71,14 @@ def _worst_loading(net) -> float:
     return round(max(values), 2) if values else 0.0
 
 
+def _unsupplied_count(net) -> int:
+    """Number of buses left without supply after a trip (true islanding signal)."""
+    try:
+        return len(pp.topology.unsupplied_buses(net))
+    except Exception:
+        return 0
+
+
 def run_n1(value: str, element: str, write: bool = False) -> ContingencyResult:
     base = loader.load_snapshot(value)
     kind, idx = _find_element(base, element)
@@ -79,14 +87,40 @@ def run_n1(value: str, element: str, write: bool = False) -> ContingencyResult:
     table = net.line if kind == "line" else net.trafo
     table.at[idx, "in_service"] = False
 
+    # Classify the trip into exactly one outcome: islanding (real loss of supply),
+    # nonconvergence (numerical instability, not an outage), overload or secure.
     converged = True
+    isolated_bus_count = 0
     try:
         pp.runpp(net)
     except pp.LoadflowNotConverged:
-        converged = False
+        # Real islanding leaves buses unsupplied; report only when N > 0.
+        isolated_bus_count = _unsupplied_count(net)
+        if isolated_bus_count > 0:
+            converged = False
+        else:
+            # No islanding: treat as numerical non-convergence and retry with a flat
+            # DC start, then a Gauss-Seidel fallback, before declaring instability.
+            converged = False
+            for kwargs in ({"init": "dc"}, {"algorithm": "gs"}):
+                try:
+                    pp.runpp(net, **kwargs)
+                    converged = True
+                    break
+                except Exception:
+                    continue
 
     overloads = _overloads(net) if converged else []
     worst = _worst_loading(net) if converged else 0.0
+
+    if isolated_bus_count > 0:
+        status = "islanding"
+    elif not converged:
+        status = "nonconvergence"
+    elif overloads:
+        status = "overload"
+    else:
+        status = "secure"
 
     result = ContingencyResult(
         datetime=loader.normalise_datetime(value),
@@ -95,6 +129,8 @@ def run_n1(value: str, element: str, write: bool = False) -> ContingencyResult:
         n1_secure=converged and len(overloads) == 0,
         new_overloads=overloads,
         worst_loading_percent=worst,
+        isolated_bus_count=isolated_bus_count,
+        status=status,
     )
 
     if write:

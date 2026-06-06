@@ -42,6 +42,9 @@ export type MapNode = {
   in_band: boolean
   p_load_mw: number
   p_gen_mw: number
+  gen_types: string[]
+  primary_gen_type: string | null
+  is_producer: boolean
 }
 
 export type MapEdge = {
@@ -52,6 +55,7 @@ export type MapEdge = {
   x2: number
   y2: number
   loading_percent: number
+  is_tie_line: boolean
 }
 
 export type GridMapData = {
@@ -103,4 +107,73 @@ export type ShiftSummary = {
   alert_count: number
   summary: string
   events: Array<{ datetime: string; alert_count: number; top: string[] }>
+}
+
+export type WorstN1 = {
+  tripped_element: string | null
+  converged: boolean
+  n1_secure: boolean
+  worst_loading_percent: number
+  isolated_bus_count: number
+  affected_element: string | null
+  affected_loading_percent: number | null
+  new_overloads: BranchLoading[]
+  n1_alert: Alert | null
+}
+
+export type HourSnapshot = {
+  datetime: string
+  state: GridState
+  alerts: AlertsPayload
+  worst_n1: WorstN1
+}
+
+export type DayBundle = {
+  date: string
+  computed_at: string
+  hours: HourSnapshot[]
+  summary: string
+}
+
+export type PlaybookResult = {
+  datetime: string
+  element: string
+  generated_at: string
+  steps: {
+    situation: Record<string, unknown>
+    n1_risk: Record<string, unknown>
+    analogues: Record<string, unknown>
+    options: Array<{
+      action: string
+      delta_mw: number
+      hours: number
+      cost_czk: number
+      price_czk_per_mwh: number
+      effect: string
+      feasibility: string
+    }>
+    immediate_action: {
+      recommendation: string
+      delta_mw: number
+      cost_czk: number
+      current_loading_percent: number
+      estimated_loading_after_percent: number
+      rationale: string
+    }
+    forward_guidance: {
+      forecast_2h: Record<string, unknown> | null
+      forecast_6h: Record<string, unknown> | null
+      guidance: string
+    }
+  }
+}
+
+export type RiskVerdict = {
+  datetime: string
+  element: string
+  verdict: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  n1_secure: boolean
+  rationale: string
+  estimated_cost_czk: number | null
+  evidence: Record<string, unknown>
 }

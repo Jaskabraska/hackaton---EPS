@@ -65,16 +65,39 @@ def _forecast_alert(gs, idx: int, horizon_h: int) -> dict | None:
 
     cost = economics.estimate_redispatch_cost(delta_mw=10, hours=horizon_h)
     growth_pct = (growth["ratio"] - 1.0) * 100.0
+
+    if projected > config.LINE_ALERT_PCT:
+        # Escalation: binding element forecast to exceed its alert threshold.
+        title = f"Forecast: {gs.binding_constraint.element} projected to {projected:.0f}% within {horizon_h} h"
+        what = (
+            f"Day-ahead load rises {growth_pct:+.0f}% from {growth['load_now_mw']} to "
+            f"{growth['load_horizon_mw']} MW over {horizon_h} h; "
+            f"{gs.binding_constraint.element} would reach ~{projected:.0f}%, exceeding the {config.LINE_ALERT_PCT}% threshold."
+        )
+        action = "Pre-arrange reserves: charge storage, pre-book redispatch and demand response before the peak."
+        impact_risk = (
+            "Reactive handling would force emergency shedding; proactive reserves hold N-1 for a fraction of the cost."
+        )
+    else:
+        # Watch: load growing materially but binding element stays within limits.
+        title = f"Load forecast: +{growth_pct:.0f}% over {horizon_h} h"
+        what = (
+            f"Day-ahead total load rises {growth_pct:+.0f}% ({growth['load_now_mw']} to "
+            f"{growth['load_horizon_mw']} MW over {horizon_h} h). "
+            f"Binding element {gs.binding_constraint.element} remains within limits at ~{projected:.0f}%."
+        )
+        action = "Monitor load trend; pre-position reserves if growth accelerates beyond forecast."
+        impact_risk = "No immediate risk; monitor if load growth accelerates beyond forecast."
+
     return {
         "id": f"ALR-{idx:03d}",
         "severity": severity,
         "element": gs.binding_constraint.element,
         "category": "line_forecast",
-        "title": f"Forecast: {gs.binding_constraint.element} projected to {projected:.0f}% within {horizon_h} h",
-        "what": f"Day-ahead load rises {growth_pct:+.0f}% from {growth['load_now_mw']} to "
-        f"{growth['load_horizon_mw']} MW over {horizon_h} h; the most-loaded element would reach ~{projected:.0f}%.",
-        "action": "Pre-arrange reserves: charge storage, pre-book redispatch and demand response before the peak.",
-        "impact_risk": "Reactive handling would force emergency shedding; proactive reserves hold N-1 for a fraction of the cost.",
+        "title": title,
+        "what": what,
+        "action": action,
+        "impact_risk": impact_risk,
         "financial": cost,
         "predictive_basis": growth,
     }

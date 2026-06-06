@@ -14,6 +14,29 @@ from .. import config
 from . import loader, state
 
 
+_GEN_TYPE_MAP = {
+    "solar": "solar",
+    "wind": "wind",
+    "hydro": "hydro",
+    "biomass": "biomass",
+    "geothermal": "geothermal",
+    "combinedcycle_gas": "gas",
+    "combustiongas": "gas",
+    "internalcombustion_gas": "gas",
+    "steamgas": "gas",
+    "steamcoal": "coal",
+    "combustionoil": "oil",
+    "steamother": "other",
+    "nuclear": "nuclear",
+}
+
+
+def _gen_type(name: str) -> str:
+    """Extract simplified generator type from a generator name like 'solar_042'."""
+    prefix = name.rsplit("_", 1)[0] if "_" in name else name
+    return _GEN_TYPE_MAP.get(prefix, "other")
+
+
 @lru_cache(maxsize=1)
 def _coordinates() -> dict[str, tuple[float, float]]:
     df = pd.read_csv(config.STATIC_DIR / "bus_coordinates.csv")
@@ -29,30 +52,47 @@ def build_map(value: str, write: bool = False) -> dict:
         b = int(net.load.at[i, "bus"])
         load_by_bus[b] = load_by_bus.get(b, 0.0) + float(net.res_load.at[i, "p_mw"])
     gen_by_bus: dict[int, float] = {}
+    gen_types_by_bus: dict[int, dict[str, float]] = {}
     for i in net.gen.index:
         b = int(net.gen.at[i, "bus"])
-        gen_by_bus[b] = gen_by_bus.get(b, 0.0) + float(net.res_gen.at[i, "p_mw"])
+        p = float(net.res_gen.at[i, "p_mw"])
+        gen_by_bus[b] = gen_by_bus.get(b, 0.0) + p
+        gtype = _gen_type(str(net.gen.at[i, "name"]))
+        if b not in gen_types_by_bus:
+            gen_types_by_bus[b] = {}
+        gen_types_by_bus[b][gtype] = gen_types_by_bus[b].get(gtype, 0.0) + p
 
+    bus_region: dict[int, str] = {}
     nodes = []
     for i in net.bus.index:
         name = str(net.bus.at[i, "name"])
+        region = str(net.bus.at[i, "zone"])
+        bus_region[i] = region
         x, y = coords.get(name, (0.0, 0.0))
         vm = float(net.res_bus.at[i, "vm_pu"]) if i in net.res_bus.index else 0.0
+        gtypes = gen_types_by_bus.get(i, {})
+        gen_type_list = sorted(gtypes.keys())
+        primary = max(gtypes, key=gtypes.get) if gtypes else None
         nodes.append(
             {
                 "bus_name": name,
-                "region": str(net.bus.at[i, "zone"]),
+                "region": region,
                 "x": x,
                 "y": y,
                 "vm_pu": round(vm, 4),
                 "in_band": state.bus_in_band(net, i),
                 "p_load_mw": round(load_by_bus.get(i, 0.0), 2),
                 "p_gen_mw": round(gen_by_bus.get(i, 0.0), 2),
+                "gen_types": gen_type_list,
+                "primary_gen_type": primary,
+                "is_producer": gen_by_bus.get(i, 0.0) > 0.0,
             }
         )
 
     def edge(name: str, a: int, b: int, loading: float, kind: str) -> dict:
         ca, cb = coords.get(str(net.bus.at[a, "name"]), (0, 0)), coords.get(str(net.bus.at[b, "name"]), (0, 0))
+        region_a = bus_region.get(a, "")
+        region_b = bus_region.get(b, "")
         return {
             "branch_name": name,
             "kind": kind,
@@ -61,6 +101,7 @@ def build_map(value: str, write: bool = False) -> dict:
             "x2": cb[0],
             "y2": cb[1],
             "loading_percent": round(float(loading) if loading == loading else 0.0, 2),
+            "is_tie_line": region_a != region_b,
         }
 
     edges = [

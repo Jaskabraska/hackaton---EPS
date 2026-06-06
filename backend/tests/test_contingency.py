@@ -36,6 +36,27 @@ def test_n1_unknown_element_raises(sample_datetime):
 
 
 @needs_dataset
+def test_n1_status_never_islanding_with_zero_buses():
+    # A trip that fails to converge with no isolated buses is numerical instability,
+    # never "loss of supply to 0 buses". (branch_002_012_1 at 19:00 is the verified case.)
+    res = contingency.run_n1("2024_02_17_19_00_00", "branch_002_012_1")
+    assert res.status in ("nonconvergence", "secure", "overload")
+    assert not (res.status == "islanding" and res.isolated_bus_count == 0)
+    if res.status == "nonconvergence":
+        assert res.isolated_bus_count == 0
+        assert res.worst_loading_percent == 0.0
+
+
+@needs_dataset
+def test_n1_real_overload_converges():
+    # The verified headline contingency: tripping branch_025_027_1 converges at ~82.5%.
+    res = contingency.run_n1("2024_02_17_19_00_00", "branch_025_027_1")
+    assert res.converged
+    assert res.status in ("secure", "overload")
+    assert res.worst_loading_percent > 80
+
+
+@needs_dataset
 def test_n1_written_to_output(sample_datetime):
     contingency.run_n1(sample_datetime, "branch_001_002_1", write=True)
     out = config.OUTPUT_DIR / "n1.json"
