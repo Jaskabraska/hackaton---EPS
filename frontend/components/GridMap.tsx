@@ -3,7 +3,6 @@
 import { useCallback, useRef, useState } from "react"
 
 import MapLegend from "@/components/MapLegend"
-import { MAP_IMAGE, mapImagePlacement } from "@/lib/cameroonGeo"
 import { BUS_GENERATION, TYPE_LABEL, iconPath } from "@/lib/generation"
 import type { Alert, GridMapData, MapEdge, MapNode } from "@/lib/types"
 
@@ -237,7 +236,6 @@ export default function GridMap({
 
   const resetView = () => setViewBox(null)
 
-  const bg = mapImagePlacement()
   const loadNodes = data.nodes.filter((n) => !BUS_GENERATION[n.bus_name])
   const genNodes = data.nodes.filter((n) => BUS_GENERATION[n.bus_name])
   const tieCount = data.edges.filter((e) => e.is_tie_line).length
@@ -258,14 +256,6 @@ export default function GridMap({
         style={{ cursor: dragging ? "grabbing" : "grab", background: "#0a0e17" }}
         aria-label="Transmission grid map"
       >
-        <image
-          href={MAP_IMAGE.path}
-          x={bg.x}
-          y={bg.y}
-          width={bg.w}
-          height={bg.h}
-          preserveAspectRatio="none"
-        />
         <RegionBoundaries nodes={data.nodes} z={z} />
 
         {data.edges.map((e) => {
