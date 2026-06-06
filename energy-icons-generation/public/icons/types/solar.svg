@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="solar"><circle cx="50" cy="50" r="50" fill="#f59e0b"/><svg x="25.00" y="25.00" width="50" height="50" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="4.4" fill="#fff"/>
+    <g stroke="#fff" stroke-width="2" stroke-linecap="round">
+      <line x1="12" y1="1.6" x2="12" y2="4"/>
+      <line x1="12" y1="20" x2="12" y2="22.4"/>
+      <line x1="1.6" y1="12" x2="4" y2="12"/>
+      <line x1="20" y1="12" x2="22.4" y2="12"/>
+      <line x1="4.4" y1="4.4" x2="6.1" y2="6.1"/>
+      <line x1="17.9" y1="17.9" x2="19.6" y2="19.6"/>
+      <line x1="19.6" y1="4.4" x2="17.9" y2="6.1"/>
+      <line x1="4.4" y1="19.6" x2="6.1" y2="17.9"/>
+    </g></svg></svg>
