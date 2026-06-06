@@ -1,0 +1,43 @@
+{
+  "datetime": "2024_01_01_18_00_00",
+  "total_load_mw": 10599.99,
+  "total_gen_mw": 10887.48,
+  "n_buses": 118,
+  "n_branches": 186,
+  "binding_constraint": {
+    "element": "branch_011_012_1",
+    "kind": "line",
+    "loading_percent": 52.72,
+    "within_limits": true
+  },
+  "worst_voltage": {
+    "bus_name": "bus_009",
+    "region": "r1",
+    "vm_pu": 1.2,
+    "in_band": true,
+    "min_v_pu": 0.8,
+    "max_v_pu": 1.2
+  },
+  "regions": [
+    {
+      "region": "r1",
+      "load_mw": 4688.61,
+      "gen_mw": 4485.1,
+      "balance_mw": -203.51
+    },
+    {
+      "region": "r2",
+      "load_mw": 2415.35,
+      "gen_mw": 3251.72,
+      "balance_mw": 836.36
+    },
+    {
+      "region": "r3",
+      "load_mw": 3496.03,
+      "gen_mw": 3150.67,
+      "balance_mw": -345.37
+    }
+  ],
+  "overloaded": [],
+  "voltage_violations": []
+}

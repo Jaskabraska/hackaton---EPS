@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-06-06T10:09:50",
+  "datetime": "2024_02_17_16_00_00",
+  "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+  "alerts": [
+    {
+      "id": "ALR-001",
+      "severity": "MEDIUM",
+      "element": "branch_011_012_1",
+      "category": "line_forecast",
+      "title": "Load forecast: +10% over 2 h",
+      "what": "Day-ahead total load rises +10% (12641.15 to 13962.95 MW over 2 h). Binding element branch_011_012_1 remains within limits at ~57%.",
+      "action": "Monitor load trend; pre-position reserves if growth accelerates beyond forecast.",
+      "impact_risk": "No immediate risk; monitor if load growth accelerates beyond forecast.",
+      "financial": {
+        "delta_mw": 10,
+        "hours": 2,
+        "fuel": "Natural Gas R1",
+        "price_czk_per_mwh": 1620.0,
+        "intervention_cost_czk": 32400.0,
+        "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price."
+      },
+      "predictive_basis": {
+        "load_now_mw": 12641.15,
+        "load_horizon_mw": 13962.95,
+        "horizon_h": 2,
+        "ratio": 1.1046
+      }
+    }
+  ],
+  "recommendation_engine": {
+    "headline": "Most loaded element branch_011_012_1 at 52%, within limits; hold reserves for the forecast peak",
+    "actions_ranked": [
+      {
+        "action": "Redispatch: raise cheap regulating generation near the deficit",
+        "effect": "lowers flow on the binding element",
+        "delta_mw": 15,
+        "hours": 2,
+        "fuel": "Natural Gas R1",
+        "price_czk_per_mwh": 1620.0,
+        "intervention_cost_czk": 48600.0,
+        "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+        "type": "redispatch"
+      }
+    ]
+  }
+}

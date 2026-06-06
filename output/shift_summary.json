@@ -1,0 +1,47 @@
+{
+  "window_start": "2024_02_17_11_00_00",
+  "window_end": "2024_02_17_23_00_00",
+  "alert_count": 3,
+  "summary": "Shift handover (demo): 11:00 17/02/2024 to 23:00 17/02/2024.\nIncidents: 3.\n- 19:00 HIGH: tripping branch_025_027_1 would drive branch_023_032_1 to 82.5%. Decision: approved_investigate. Recommended action: Pre-arrange redispatch to relieve the contingency corridor.\n- 12:00 MEDIUM: Load forecast: +15% over 6 h. Decision: not recorded. Recommended action: Monitor load trend; pre-position reserves if growth accelerates beyond forecast.\n- 16:00 MEDIUM: Load forecast: +10% over 2 h. Decision: not recorded. Recommended action: Monitor load trend; pre-position reserves if growth accelerates beyond forecast.\nTop constraints: branch_011_012_1 at 62.3% (within limits); branch_011_012_1 at 62.2% (within limits); branch_011_012_1 at 60.4% (within limits).\nForward risk: keep redispatch ready for the N-1 contingency corridor and monitor the next shift.",
+  "events": [
+    {
+      "time": "12:00",
+      "datetime": "2024_02_17_12_00_00",
+      "severity": "MEDIUM",
+      "element": "branch_011_012_1",
+      "title": "Load forecast: +15% over 6 h",
+      "action": "Monitor load trend; pre-position reserves if growth accelerates beyond forecast.",
+      "category": "line_forecast",
+      "tripped_element": null,
+      "affected_loading_percent": null,
+      "decision": "not recorded",
+      "recommended_action": "Monitor load trend; pre-position reserves if growth accelerates beyond forecast."
+    },
+    {
+      "time": "16:00",
+      "datetime": "2024_02_17_16_00_00",
+      "severity": "MEDIUM",
+      "element": "branch_011_012_1",
+      "title": "Load forecast: +10% over 2 h",
+      "action": "Monitor load trend; pre-position reserves if growth accelerates beyond forecast.",
+      "category": "line_forecast",
+      "tripped_element": null,
+      "affected_loading_percent": null,
+      "decision": "not recorded",
+      "recommended_action": "Monitor load trend; pre-position reserves if growth accelerates beyond forecast."
+    },
+    {
+      "time": "19:00",
+      "datetime": "2024_02_17_19_00_00",
+      "severity": "HIGH",
+      "element": "branch_023_032_1",
+      "title": "N-1 risk: if branch_025_027_1 trips, branch_023_032_1 reaches 82%",
+      "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+      "category": "n1_contingency",
+      "tripped_element": "branch_025_027_1",
+      "affected_loading_percent": 82.5,
+      "decision": "approved_investigate",
+      "recommended_action": "Pre-arrange redispatch to relieve the contingency corridor."
+    }
+  ]
+}

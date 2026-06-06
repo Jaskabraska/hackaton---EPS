@@ -1,0 +1,28 @@
+{
+  "datetime": "2024_02_17_12_00_00",
+  "element": "branch_011_012_1",
+  "verdict": "LOW",
+  "n1_secure": true,
+  "rationale": "The single-element risk assessment for branch_011_012_1 indicates a secure status following a tripping event on 17 February 2024 at 12:00:00. The worst loading percent was recorded at 42.5%, with no isolated buses. The intervention cost was calculated at 48,600 CZK, based on a delta of 15 MW over 2 hours, using Natural Gas R1 with a price of 1,620 CZK per MWh.",
+  "estimated_cost_czk": 48600.0,
+  "evidence": {
+    "n1": {
+      "datetime": "2024_02_17_12_00_00",
+      "tripped_element": "branch_011_012_1",
+      "converged": true,
+      "n1_secure": true,
+      "new_overloads": [],
+      "worst_loading_percent": 42.5,
+      "isolated_bus_count": 0,
+      "status": "secure"
+    },
+    "cost": {
+      "delta_mw": 15,
+      "hours": 2,
+      "fuel": "Natural Gas R1",
+      "price_czk_per_mwh": 1620.0,
+      "intervention_cost_czk": 48600.0,
+      "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price."
+    }
+  }
+}

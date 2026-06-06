@@ -1,0 +1,2154 @@
+{
+  "date": "2024_02_17",
+  "computed_at": "2026-06-06T08:01:15",
+  "hours": [
+    {
+      "datetime": "2024_02_17_00_00_00",
+      "state": {
+        "datetime": "2024_02_17_00_00_00",
+        "total_load_mw": 8536.15,
+        "total_gen_mw": 8690.6,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 44.11,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4034.61,
+            "gen_mw": 3853.55,
+            "balance_mw": -181.06
+          },
+          {
+            "region": "r2",
+            "load_mw": 2009.0,
+            "gen_mw": 2535.7,
+            "balance_mw": 526.7
+          },
+          {
+            "region": "r3",
+            "load_mw": 2492.53,
+            "gen_mw": 2301.35,
+            "balance_mw": -191.19
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:25",
+        "datetime": "2024_02_17_00_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [
+          {
+            "id": "ALR-001",
+            "severity": "MEDIUM",
+            "element": "branch_011_012_1",
+            "category": "line_forecast",
+            "title": "Load forecast: +13% over 6 h",
+            "what": "Day-ahead total load rises +13% (9560.7 to 10826.37 MW over 6 h). Binding element branch_011_012_1 remains within limits at ~50%.",
+            "action": "Monitor load trend; pre-position reserves if growth accelerates beyond forecast.",
+            "impact_risk": "No immediate risk; monitor if load growth accelerates beyond forecast.",
+            "financial": {
+              "delta_mw": 10,
+              "hours": 6,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 97200.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price."
+            },
+            "predictive_basis": {
+              "load_now_mw": 9560.7,
+              "load_horizon_mw": 10826.37,
+              "horizon_h": 6,
+              "ratio": 1.1324
+            }
+          }
+        ],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 44%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_032_113_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 55.84,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": null,
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_01_00_00",
+      "state": {
+        "datetime": "2024_02_17_01_00_00",
+        "total_load_mw": 7255.04,
+        "total_gen_mw": 7357.17,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 35.22,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 3403.1,
+            "gen_mw": 3267.02,
+            "balance_mw": -136.08
+          },
+          {
+            "region": "r2",
+            "load_mw": 1665.63,
+            "gen_mw": 2132.47,
+            "balance_mw": 466.85
+          },
+          {
+            "region": "r3",
+            "load_mw": 2186.32,
+            "gen_mw": 1957.67,
+            "balance_mw": -228.65
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:29",
+        "datetime": "2024_02_17_01_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 35%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 44.45,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": null,
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_02_00_00",
+      "state": {
+        "datetime": "2024_02_17_02_00_00",
+        "total_load_mw": 7161.37,
+        "total_gen_mw": 7258.8,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 35.4,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 3415.04,
+            "gen_mw": 3280.75,
+            "balance_mw": -134.3
+          },
+          {
+            "region": "r2",
+            "load_mw": 1696.52,
+            "gen_mw": 2103.42,
+            "balance_mw": 406.91
+          },
+          {
+            "region": "r3",
+            "load_mw": 2049.81,
+            "gen_mw": 1874.63,
+            "balance_mw": -175.18
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:33",
+        "datetime": "2024_02_17_02_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 35%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 44.68,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": null,
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_03_00_00",
+      "state": {
+        "datetime": "2024_02_17_03_00_00",
+        "total_load_mw": 6941.15,
+        "total_gen_mw": 7032.13,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 33.93,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 3303.35,
+            "gen_mw": 3177.91,
+            "balance_mw": -125.44
+          },
+          {
+            "region": "r2",
+            "load_mw": 1670.38,
+            "gen_mw": 2006.85,
+            "balance_mw": 336.47
+          },
+          {
+            "region": "r3",
+            "load_mw": 1967.42,
+            "gen_mw": 1847.37,
+            "balance_mw": -120.05
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:37",
+        "datetime": "2024_02_17_03_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 34%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 42.78,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": null,
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_04_00_00",
+      "state": {
+        "datetime": "2024_02_17_04_00_00",
+        "total_load_mw": 6809.25,
+        "total_gen_mw": 6895.98,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 33.14,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 3243.64,
+            "gen_mw": 3120.27,
+            "balance_mw": -123.37
+          },
+          {
+            "region": "r2",
+            "load_mw": 1659.68,
+            "gen_mw": 1995.38,
+            "balance_mw": 335.69
+          },
+          {
+            "region": "r3",
+            "load_mw": 1905.93,
+            "gen_mw": 1780.33,
+            "balance_mw": -125.6
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:40",
+        "datetime": "2024_02_17_04_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 33%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 41.75,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": null,
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_05_00_00",
+      "state": {
+        "datetime": "2024_02_17_05_00_00",
+        "total_load_mw": 6917.48,
+        "total_gen_mw": 7009.45,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 33.63,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 3278.76,
+            "gen_mw": 3158.76,
+            "balance_mw": -120.0
+          },
+          {
+            "region": "r2",
+            "load_mw": 1714.34,
+            "gen_mw": 2067.54,
+            "balance_mw": 353.2
+          },
+          {
+            "region": "r3",
+            "load_mw": 1924.38,
+            "gen_mw": 1783.14,
+            "balance_mw": -141.24
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:44",
+        "datetime": "2024_02_17_05_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 34%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_025_027_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 43.22,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": null,
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_06_00_00",
+      "state": {
+        "datetime": "2024_02_17_06_00_00",
+        "total_load_mw": 7592.74,
+        "total_gen_mw": 7700.61,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 36.55,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 3498.63,
+            "gen_mw": 3374.53,
+            "balance_mw": -124.1
+          },
+          {
+            "region": "r2",
+            "load_mw": 1949.59,
+            "gen_mw": 2364.94,
+            "balance_mw": 415.35
+          },
+          {
+            "region": "r3",
+            "load_mw": 2144.51,
+            "gen_mw": 1961.14,
+            "balance_mw": -183.37
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:48",
+        "datetime": "2024_02_17_06_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 37%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 46.2,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": null,
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_07_00_00",
+      "state": {
+        "datetime": "2024_02_17_07_00_00",
+        "total_load_mw": 9069.02,
+        "total_gen_mw": 9229.72,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 45.51,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4121.72,
+            "gen_mw": 3958.52,
+            "balance_mw": -163.2
+          },
+          {
+            "region": "r2",
+            "load_mw": 2378.52,
+            "gen_mw": 2937.08,
+            "balance_mw": 558.56
+          },
+          {
+            "region": "r3",
+            "load_mw": 2568.78,
+            "gen_mw": 2334.12,
+            "balance_mw": -234.66
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:52",
+        "datetime": "2024_02_17_07_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 46%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 57.47,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": null,
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_08_00_00",
+      "state": {
+        "datetime": "2024_02_17_08_00_00",
+        "total_load_mw": 10013.57,
+        "total_gen_mw": 10224.57,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 52.8,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4647.87,
+            "gen_mw": 4449.32,
+            "balance_mw": -198.54
+          },
+          {
+            "region": "r2",
+            "load_mw": 2546.05,
+            "gen_mw": 3240.67,
+            "balance_mw": 694.62
+          },
+          {
+            "region": "r3",
+            "load_mw": 2819.65,
+            "gen_mw": 2534.58,
+            "balance_mw": -285.08
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:37:55",
+        "datetime": "2024_02_17_08_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 53%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_002_012_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 67.05,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_011_013_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_09_00_00",
+      "state": {
+        "datetime": "2024_02_17_09_00_00",
+        "total_load_mw": 10258.17,
+        "total_gen_mw": 10468.31,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 53.67,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4744.81,
+            "gen_mw": 4542.9,
+            "balance_mw": -201.91
+          },
+          {
+            "region": "r2",
+            "load_mw": 2543.67,
+            "gen_mw": 3266.25,
+            "balance_mw": 722.58
+          },
+          {
+            "region": "r3",
+            "load_mw": 2969.69,
+            "gen_mw": 2659.16,
+            "balance_mw": -310.53
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:38:59",
+        "datetime": "2024_02_17_09_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 54%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_002_012_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 73.3,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_011_013_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_10_00_00",
+      "state": {
+        "datetime": "2024_02_17_10_00_00",
+        "total_load_mw": 10434.5,
+        "total_gen_mw": 10651.12,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 54.63,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4843.85,
+            "gen_mw": 4634.02,
+            "balance_mw": -209.83
+          },
+          {
+            "region": "r2",
+            "load_mw": 2513.97,
+            "gen_mw": 3284.0,
+            "balance_mw": 770.03
+          },
+          {
+            "region": "r3",
+            "load_mw": 3076.68,
+            "gen_mw": 2733.1,
+            "balance_mw": -343.58
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:40:04",
+        "datetime": "2024_02_17_10_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 55%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 69.24,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_002_012_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_11_00_00",
+      "state": {
+        "datetime": "2024_02_17_11_00_00",
+        "total_load_mw": 10439.07,
+        "total_gen_mw": 10672.01,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 54.55,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4819.27,
+            "gen_mw": 4607.19,
+            "balance_mw": -212.08
+          },
+          {
+            "region": "r2",
+            "load_mw": 2489.02,
+            "gen_mw": 3300.5,
+            "balance_mw": 811.49
+          },
+          {
+            "region": "r3",
+            "load_mw": 3130.79,
+            "gen_mw": 2764.32,
+            "balance_mw": -366.47
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:41:38",
+        "datetime": "2024_02_17_11_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 55%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 69.15,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_002_012_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_12_00_00",
+      "state": {
+        "datetime": "2024_02_17_12_00_00",
+        "total_load_mw": 10302.68,
+        "total_gen_mw": 10542.43,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 54.05,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4775.71,
+            "gen_mw": 4558.93,
+            "balance_mw": -216.78
+          },
+          {
+            "region": "r2",
+            "load_mw": 2401.09,
+            "gen_mw": 3217.13,
+            "balance_mw": 816.04
+          },
+          {
+            "region": "r3",
+            "load_mw": 3125.87,
+            "gen_mw": 2766.36,
+            "balance_mw": -359.5
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:43:18",
+        "datetime": "2024_02_17_12_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [
+          {
+            "id": "ALR-001",
+            "severity": "MEDIUM",
+            "element": "branch_011_012_1",
+            "category": "line_forecast",
+            "title": "Load forecast: +15% over 6 h",
+            "what": "Day-ahead total load rises +15% (12156.84 to 13962.95 MW over 6 h). Binding element branch_011_012_1 remains within limits at ~62%.",
+            "action": "Monitor load trend; pre-position reserves if growth accelerates beyond forecast.",
+            "impact_risk": "No immediate risk; monitor if load growth accelerates beyond forecast.",
+            "financial": {
+              "delta_mw": 10,
+              "hours": 6,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 97200.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price."
+            },
+            "predictive_basis": {
+              "load_now_mw": 12156.84,
+              "load_horizon_mw": 13962.95,
+              "horizon_h": 6,
+              "ratio": 1.1486
+            }
+          }
+        ],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 54%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 68.52,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_002_012_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_13_00_00",
+      "state": {
+        "datetime": "2024_02_17_13_00_00",
+        "total_load_mw": 10218.35,
+        "total_gen_mw": 10460.62,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 53.47,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4762.37,
+            "gen_mw": 4556.99,
+            "balance_mw": -205.38
+          },
+          {
+            "region": "r2",
+            "load_mw": 2355.94,
+            "gen_mw": 3155.03,
+            "balance_mw": 799.08
+          },
+          {
+            "region": "r3",
+            "load_mw": 3100.04,
+            "gen_mw": 2748.6,
+            "balance_mw": -351.44
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:44:57",
+        "datetime": "2024_02_17_13_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 53%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_002_012_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 75.49,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_011_013_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_14_00_00",
+      "state": {
+        "datetime": "2024_02_17_14_00_00",
+        "total_load_mw": 10097.78,
+        "total_gen_mw": 10331.24,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 53.47,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4720.92,
+            "gen_mw": 4499.54,
+            "balance_mw": -221.38
+          },
+          {
+            "region": "r2",
+            "load_mw": 2297.72,
+            "gen_mw": 3114.76,
+            "balance_mw": 817.03
+          },
+          {
+            "region": "r3",
+            "load_mw": 3079.14,
+            "gen_mw": 2716.94,
+            "balance_mw": -362.2
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:46:03",
+        "datetime": "2024_02_17_14_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 53%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_002_012_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 71.27,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_011_013_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_15_00_00",
+      "state": {
+        "datetime": "2024_02_17_15_00_00",
+        "total_load_mw": 9960.54,
+        "total_gen_mw": 10163.51,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 52.61,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4671.75,
+            "gen_mw": 4447.18,
+            "balance_mw": -224.57
+          },
+          {
+            "region": "r2",
+            "load_mw": 2249.01,
+            "gen_mw": 3024.05,
+            "balance_mw": 775.04
+          },
+          {
+            "region": "r3",
+            "load_mw": 3039.78,
+            "gen_mw": 2692.27,
+            "balance_mw": -347.51
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:47:08",
+        "datetime": "2024_02_17_15_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 53%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_002_012_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 68.37,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_011_013_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_16_00_00",
+      "state": {
+        "datetime": "2024_02_17_16_00_00",
+        "total_load_mw": 9751.44,
+        "total_gen_mw": 9941.87,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 51.51,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4576.92,
+            "gen_mw": 4354.53,
+            "balance_mw": -222.38
+          },
+          {
+            "region": "r2",
+            "load_mw": 2210.99,
+            "gen_mw": 2939.08,
+            "balance_mw": 728.09
+          },
+          {
+            "region": "r3",
+            "load_mw": 2963.54,
+            "gen_mw": 2648.26,
+            "balance_mw": -315.28
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:48:12",
+        "datetime": "2024_02_17_16_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [
+          {
+            "id": "ALR-001",
+            "severity": "MEDIUM",
+            "element": "branch_011_012_1",
+            "category": "line_forecast",
+            "title": "Load forecast: +10% over 2 h",
+            "what": "Day-ahead total load rises +10% (12641.15 to 13962.95 MW over 2 h). Binding element branch_011_012_1 remains within limits at ~57%.",
+            "action": "Monitor load trend; pre-position reserves if growth accelerates beyond forecast.",
+            "impact_risk": "No immediate risk; monitor if load growth accelerates beyond forecast.",
+            "financial": {
+              "delta_mw": 10,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 32400.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price."
+            },
+            "predictive_basis": {
+              "load_now_mw": 12641.15,
+              "load_horizon_mw": 13962.95,
+              "horizon_h": 2,
+              "ratio": 1.1046
+            }
+          }
+        ],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 52%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 65.14,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_011_013_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_17_00_00",
+      "state": {
+        "datetime": "2024_02_17_17_00_00",
+        "total_load_mw": 9772.59,
+        "total_gen_mw": 9975.31,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 51.35,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4563.57,
+            "gen_mw": 4350.25,
+            "balance_mw": -213.32
+          },
+          {
+            "region": "r2",
+            "load_mw": 2244.26,
+            "gen_mw": 2955.6,
+            "balance_mw": 711.35
+          },
+          {
+            "region": "r3",
+            "load_mw": 2964.77,
+            "gen_mw": 2669.46,
+            "balance_mw": -295.31
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:49:16",
+        "datetime": "2024_02_17_17_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 51%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_008_005_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 65.01,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_011_013_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_18_00_00",
+      "state": {
+        "datetime": "2024_02_17_18_00_00",
+        "total_load_mw": 10740.76,
+        "total_gen_mw": 11033.85,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 58.38,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 5024.39,
+            "gen_mw": 4794.61,
+            "balance_mw": -229.78
+          },
+          {
+            "region": "r2",
+            "load_mw": 2505.65,
+            "gen_mw": 3345.87,
+            "balance_mw": 840.22
+          },
+          {
+            "region": "r3",
+            "load_mw": 3210.72,
+            "gen_mw": 2893.37,
+            "balance_mw": -317.35
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:50:23",
+        "datetime": "2024_02_17_18_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 58%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_032_113_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 77.87,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_002_012_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_19_00_00",
+      "state": {
+        "datetime": "2024_02_17_19_00_00",
+        "total_load_mw": 11622.29,
+        "total_gen_mw": 11986.65,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 62.32,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 5290.62,
+            "gen_mw": 5046.86,
+            "balance_mw": -243.77
+          },
+          {
+            "region": "r2",
+            "load_mw": 2739.72,
+            "gen_mw": 3716.85,
+            "balance_mw": 977.13
+          },
+          {
+            "region": "r3",
+            "load_mw": 3591.95,
+            "gen_mw": 3222.94,
+            "balance_mw": -369.02
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:52:06",
+        "datetime": "2024_02_17_19_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [
+          {
+            "id": "ALR-N1-OL",
+            "severity": "HIGH",
+            "element": "branch_023_032_1",
+            "category": "n1_contingency",
+            "title": "N-1 risk: if branch_025_027_1 trips, branch_023_032_1 reaches 82%",
+            "what": "At this hour the grid is N-1 at risk: if branch_025_027_1 trips, branch_023_032_1 would rise to 82.5% (over its 80% limit).",
+            "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+            "impact_risk": "A single trip could cause cascading overload.",
+            "financial": null,
+            "predictive_basis": null,
+            "tripped_element": "branch_025_027_1",
+            "affected_loading_percent": 82.5
+          }
+        ],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 62%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_025_027_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 82.5,
+        "isolated_bus_count": 0,
+        "affected_element": "branch_023_032_1",
+        "affected_loading_percent": 82.5,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_002_012_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": {
+          "id": "ALR-N1-OL",
+          "severity": "HIGH",
+          "element": "branch_023_032_1",
+          "category": "n1_contingency",
+          "title": "N-1 risk: if branch_025_027_1 trips, branch_023_032_1 reaches 82%",
+          "what": "At this hour the grid is N-1 at risk: if branch_025_027_1 trips, branch_023_032_1 would rise to 82.5% (over its 80% limit).",
+          "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+          "impact_risk": "A single trip could cause cascading overload.",
+          "financial": null,
+          "predictive_basis": null,
+          "tripped_element": "branch_025_027_1",
+          "affected_loading_percent": 82.5
+        },
+        "n1_alerts": [
+          {
+            "id": "ALR-N1-OL",
+            "severity": "HIGH",
+            "element": "branch_023_032_1",
+            "category": "n1_contingency",
+            "title": "N-1 risk: if branch_025_027_1 trips, branch_023_032_1 reaches 82%",
+            "what": "At this hour the grid is N-1 at risk: if branch_025_027_1 trips, branch_023_032_1 would rise to 82.5% (over its 80% limit).",
+            "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+            "impact_risk": "A single trip could cause cascading overload.",
+            "financial": null,
+            "predictive_basis": null,
+            "tripped_element": "branch_025_027_1",
+            "affected_loading_percent": 82.5
+          }
+        ]
+      }
+    },
+    {
+      "datetime": "2024_02_17_20_00_00",
+      "state": {
+        "datetime": "2024_02_17_20_00_00",
+        "total_load_mw": 11473.64,
+        "total_gen_mw": 11826.38,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 62.17,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 5224.59,
+            "gen_mw": 4988.18,
+            "balance_mw": -236.41
+          },
+          {
+            "region": "r2",
+            "load_mw": 2711.2,
+            "gen_mw": 3669.62,
+            "balance_mw": 958.42
+          },
+          {
+            "region": "r3",
+            "load_mw": 3537.84,
+            "gen_mw": 3168.58,
+            "balance_mw": -369.26
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:54:08",
+        "datetime": "2024_02_17_20_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 62%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_025_027_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 81.16,
+        "isolated_bus_count": 0,
+        "affected_element": "branch_023_032_1",
+        "affected_loading_percent": 81.16,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_002_012_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": {
+          "id": "ALR-N1-OL",
+          "severity": "HIGH",
+          "element": "branch_023_032_1",
+          "category": "n1_contingency",
+          "title": "N-1 risk: if branch_025_027_1 trips, branch_023_032_1 reaches 81%",
+          "what": "At this hour the grid is N-1 at risk: if branch_025_027_1 trips, branch_023_032_1 would rise to 81.2% (over its 80% limit).",
+          "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+          "impact_risk": "A single trip could cause cascading overload.",
+          "financial": null,
+          "predictive_basis": null,
+          "tripped_element": "branch_025_027_1",
+          "affected_loading_percent": 81.16
+        },
+        "n1_alerts": [
+          {
+            "id": "ALR-N1-OL",
+            "severity": "HIGH",
+            "element": "branch_023_032_1",
+            "category": "n1_contingency",
+            "title": "N-1 risk: if branch_025_027_1 trips, branch_023_032_1 reaches 81%",
+            "what": "At this hour the grid is N-1 at risk: if branch_025_027_1 trips, branch_023_032_1 would rise to 81.2% (over its 80% limit).",
+            "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+            "impact_risk": "A single trip could cause cascading overload.",
+            "financial": null,
+            "predictive_basis": null,
+            "tripped_element": "branch_025_027_1",
+            "affected_loading_percent": 81.16
+          }
+        ]
+      }
+    },
+    {
+      "datetime": "2024_02_17_21_00_00",
+      "state": {
+        "datetime": "2024_02_17_21_00_00",
+        "total_load_mw": 11218.33,
+        "total_gen_mw": 11557.73,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 60.42,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 5117.81,
+            "gen_mw": 4892.02,
+            "balance_mw": -225.8
+          },
+          {
+            "region": "r2",
+            "load_mw": 2668.43,
+            "gen_mw": 3578.75,
+            "balance_mw": 910.32
+          },
+          {
+            "region": "r3",
+            "load_mw": 3432.08,
+            "gen_mw": 3086.97,
+            "balance_mw": -345.12
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:55:57",
+        "datetime": "2024_02_17_21_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 60%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_025_027_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 81.71,
+        "isolated_bus_count": 0,
+        "affected_element": "branch_023_032_1",
+        "affected_loading_percent": 81.71,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_002_012_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": {
+          "id": "ALR-N1-OL",
+          "severity": "HIGH",
+          "element": "branch_023_032_1",
+          "category": "n1_contingency",
+          "title": "N-1 risk: if branch_025_027_1 trips, branch_023_032_1 reaches 82%",
+          "what": "At this hour the grid is N-1 at risk: if branch_025_027_1 trips, branch_023_032_1 would rise to 81.7% (over its 80% limit).",
+          "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+          "impact_risk": "A single trip could cause cascading overload.",
+          "financial": null,
+          "predictive_basis": null,
+          "tripped_element": "branch_025_027_1",
+          "affected_loading_percent": 81.71
+        },
+        "n1_alerts": [
+          {
+            "id": "ALR-N1-OL",
+            "severity": "HIGH",
+            "element": "branch_023_032_1",
+            "category": "n1_contingency",
+            "title": "N-1 risk: if branch_025_027_1 trips, branch_023_032_1 reaches 82%",
+            "what": "At this hour the grid is N-1 at risk: if branch_025_027_1 trips, branch_023_032_1 would rise to 81.7% (over its 80% limit).",
+            "action": "Pre-arrange redispatch to relieve the contingency corridor.",
+            "impact_risk": "A single trip could cause cascading overload.",
+            "financial": null,
+            "predictive_basis": null,
+            "tripped_element": "branch_025_027_1",
+            "affected_loading_percent": 81.71
+          }
+        ]
+      }
+    },
+    {
+      "datetime": "2024_02_17_22_00_00",
+      "state": {
+        "datetime": "2024_02_17_22_00_00",
+        "total_load_mw": 10555.08,
+        "total_gen_mw": 10857.68,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 56.41,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4886.0,
+            "gen_mw": 4673.26,
+            "balance_mw": -212.74
+          },
+          {
+            "region": "r2",
+            "load_mw": 2486.64,
+            "gen_mw": 3327.25,
+            "balance_mw": 840.61
+          },
+          {
+            "region": "r3",
+            "load_mw": 3182.44,
+            "gen_mw": 2857.16,
+            "balance_mw": -325.27
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:57:42",
+        "datetime": "2024_02_17_22_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 56%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_025_027_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 78.97,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_002_012_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    },
+    {
+      "datetime": "2024_02_17_23_00_00",
+      "state": {
+        "datetime": "2024_02_17_23_00_00",
+        "total_load_mw": 9572.67,
+        "total_gen_mw": 9812.01,
+        "n_buses": 118,
+        "n_branches": 186,
+        "binding_constraint": {
+          "element": "branch_011_012_1",
+          "kind": "line",
+          "loading_percent": 50.67,
+          "within_limits": true
+        },
+        "worst_voltage": {
+          "bus_name": "bus_009",
+          "region": "r1",
+          "vm_pu": 1.2,
+          "in_band": true,
+          "min_v_pu": 0.8,
+          "max_v_pu": 1.2
+        },
+        "regions": [
+          {
+            "region": "r1",
+            "load_mw": 4487.0,
+            "gen_mw": 4291.61,
+            "balance_mw": -195.39
+          },
+          {
+            "region": "r2",
+            "load_mw": 2254.95,
+            "gen_mw": 2970.34,
+            "balance_mw": 715.39
+          },
+          {
+            "region": "r3",
+            "load_mw": 2830.72,
+            "gen_mw": 2550.07,
+            "balance_mw": -280.66
+          }
+        ],
+        "overloaded": [],
+        "voltage_violations": []
+      },
+      "alerts": {
+        "generated_at": "2026-06-06T07:59:47",
+        "datetime": "2024_02_17_23_00_00",
+        "source": "Grid Pulse - alerts from solved snapshot + day-ahead forecast",
+        "alerts": [],
+        "recommendation_engine": {
+          "headline": "Most loaded element branch_011_012_1 at 51%, within limits; hold reserves for the forecast peak",
+          "actions_ranked": [
+            {
+              "action": "Redispatch: raise cheap regulating generation near the deficit",
+              "effect": "lowers flow on the binding element",
+              "delta_mw": 15,
+              "hours": 2,
+              "fuel": "Natural Gas R1",
+              "price_czk_per_mwh": 1620.0,
+              "intervention_cost_czk": 48600.0,
+              "note": "Illustrative: fuel-price unit x CZK_PER_PRICE_UNIT. Not a settled market price.",
+              "type": "redispatch"
+            }
+          ]
+        }
+      },
+      "worst_n1": {
+        "tripped_element": "branch_032_113_1",
+        "status": "secure",
+        "converged": true,
+        "n1_secure": true,
+        "worst_loading_percent": 71.48,
+        "isolated_bus_count": 0,
+        "affected_element": null,
+        "affected_loading_percent": null,
+        "new_overloads": [],
+        "nonconvergence_note": "Tripping branch_011_013_1 did not converge after DC/Gauss-Seidel retries \u2014 possible instability, flagged for study.",
+        "n1_alert": null,
+        "n1_alerts": []
+      }
+    }
+  ],
+  "summary": "Shift handover (demo): 11:00 17/02/2024 to 23:00 17/02/2024.\nIncidents: 3.\n- 19:00 HIGH: tripping branch_025_027_1 would drive branch_023_032_1 to 82.5%. Decision: not recorded. Recommended action: Pre-arrange redispatch to relieve the contingency corridor.\n- 12:00 MEDIUM: Load forecast: +15% over 6 h. Decision: not recorded. Recommended action: Monitor load trend; pre-position reserves if growth accelerates beyond forecast.\n- 16:00 MEDIUM: Load forecast: +10% over 2 h. Decision: not recorded. Recommended action: Monitor load trend; pre-position reserves if growth accelerates beyond forecast.\nTop constraints: branch_011_012_1 at 62.3% (within limits); branch_011_012_1 at 62.2% (within limits); branch_011_012_1 at 60.4% (within limits).\nForward risk: keep redispatch ready for the N-1 contingency corridor and monitor the next shift.",
+  "summary_window": {
+    "window_start": "2024_02_17_11_00_00",
+    "window_end": "2024_02_17_23_00_00",
+    "alert_count": 3
+  }
+}

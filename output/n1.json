@@ -1,0 +1,10 @@
+{
+  "datetime": "2024_02_17_21_00_00",
+  "tripped_element": "branch_022_023_1",
+  "converged": true,
+  "n1_secure": true,
+  "new_overloads": [],
+  "worst_loading_percent": 60.16,
+  "isolated_bus_count": 0,
+  "status": "secure"
+}
